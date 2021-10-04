@@ -18,10 +18,10 @@ import (
 
 func App() *fiber.App {
 	app := fiber.New(fiber.Config{
-		ETag: true,
+		ETag:          true,
 		CaseSensitive: true,
 		StrictRouting: false,
-		ErrorHandler: ,
+		ErrorHandler:  handlers.ErrorHandler,
 	})
 
 	// Setup Postgres/Cockroach
@@ -53,6 +53,9 @@ func App() *fiber.App {
 	err = sentry.Init(sentry.ClientOptions{
 		Dsn: os.Getenv("SENTRY_DSN"),
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	// Setup Dependency injection struct
 	r := handlers.Dependency{

@@ -10,8 +10,8 @@ import (
 )
 
 type Meta struct {
-	Level string `json:"level"`
-	Date string `json:"date,omitempty"`
+	Level  string `json:"level"`
+	Date   string `json:"date,omitempty"`
 	Source string `json:"source,omitempty"`
 }
 
@@ -40,7 +40,7 @@ func Log(message interface{}) error {
 	req.Header.Set("Authorization", os.Getenv("LOGTAIL_TOKEN"))
 
 	c := &http.Client{}
-	
+
 	resp, err := c.Do(req)
 	if err != nil {
 		return err

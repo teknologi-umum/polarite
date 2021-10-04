@@ -18,7 +18,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	
+
 	data, err := controllers.InsertPasteToDB(conn, body)
 	if err != nil {
 		return err

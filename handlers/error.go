@@ -12,7 +12,7 @@ func ErrorHandler(c *fiber.Ctx, e error) error {
 	err := logtail.Log(logtail.Error{
 		Meta: logtail.Meta{
 			Level: "error",
-			Date: time.Now().String(),
+			Date:  time.Now().String(),
 		},
 		Error: e.Error(),
 	})
