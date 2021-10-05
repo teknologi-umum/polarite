@@ -14,11 +14,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/jackc/pgx/v4/pgxpool"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func App() *fiber.App {
 	app := fiber.New(fiber.Config{
-		ETag:          true,
 		CaseSensitive: true,
 		StrictRouting: false,
 		ErrorHandler:  handlers.ErrorHandler,
@@ -66,8 +66,8 @@ func App() *fiber.App {
 
 	app.Use(cors.New())
 	app.Use(sentryfiber.New(sentryfiber.Options{}))
-	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.HomePage)
-	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.Get)
+	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.HomePage)
+	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.Get)
 	app.Post("/", r.AddPaste)
 
 	return app

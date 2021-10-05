@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aidarkhanov/nanoid/v2"
-	"github.com/georgysavva/scany/pgxscan"
+	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -21,17 +21,29 @@ func InsertPasteToDB(db *pgxpool.Conn, body []byte) (models.Item, error) {
 	}
 
 	creationTime := time.Now().Format(time.RFC3339)
-	r, err := db.Query(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3) RETURNING id", id, string(body), creationTime)
+	r, err := db.Query(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3)", id, string(body), creationTime)
 	if err != nil {
 		return models.Item{}, err
 	}
 	defer r.Close()
 
-	var result models.Item
-	err = pgxscan.ScanOne(&result, r)
+	t, err := time.Parse(time.RFC3339, creationTime)
 	if err != nil {
 		return models.Item{}, err
 	}
 
-	return result, nil
+	return models.Item{
+		ID:        id,
+		Paste:     string(body),
+		CreatedAt: t,
+	}, nil
+}
+
+func InsertPasteToCache(cache *redis.Client, paste models.Item) error {
+	_, err := cache.SetEX(context.Background(), "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

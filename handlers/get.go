@@ -7,6 +7,7 @@ import (
 	"polarite/business/models"
 	"polarite/repository"
 
+	"github.com/allegro/bigcache/v3"
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,7 +16,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	// Parse the URL param first
 	id := c.Params("id")
 	if id == "" {
-		return repository.ErrNoID
+		return c.Status(http.StatusBadRequest).Send([]byte(repository.ErrNoID.Error()))
 	}
 
 	// TODO: Process the query string
@@ -25,10 +26,27 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Validate if the ID exists or not
-	ids, err := controllers.ReadIDFromMemory(d.Memory)
+	conn, err := d.DB.Acquire(c.Context())
 	if err != nil {
 		return err
+	}
+
+	// Validate if the ID exists or not
+	ids, err := controllers.ReadIDFromMemory(d.Memory)
+	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
+		return err
+	}
+
+	if errors.Is(err, bigcache.ErrEntryNotFound) {
+		pastes, err := controllers.ReadIDFromDB(conn)
+		if err != nil {
+			return err
+		}
+
+		ids, err = controllers.UpdateIDListFromDB(d.Memory, pastes)
+		if err != nil {
+			return err
+		}
 	}
 
 	idExists := controllers.ValidateID(ids, id)
@@ -42,12 +60,14 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		return err
 	}
 
+	// Item not found on Redis, now try to fetch from DB
 	if errors.Is(err, redis.Nil) {
-		conn, err := d.DB.Acquire(c.Context())
+		i, err = controllers.ReadItemFromDB(conn, id)
 		if err != nil {
 			return err
 		}
-		i, err = controllers.ReadItemFromDB(conn, id)
+
+		err = controllers.InsertPasteToCache(d.Cache, i)
 		if err != nil {
 			return err
 		}
