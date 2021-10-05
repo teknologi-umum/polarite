@@ -11,7 +11,7 @@ import (
 
 // Highlight the source using chroma in HTML format.
 // It will return the original content in plain text when it fails.
-func Highlight(source, lang, theme, linenr string) string {
+func Highlight(source, lang, theme, linenr string) (string, error) {
 	lexer := lexers.Get(lang)
 	if lexer == nil {
 		lexer = lexers.Fallback
@@ -20,14 +20,14 @@ func Highlight(source, lang, theme, linenr string) string {
 	lexer = chroma.Coalesce(lexer)
 
 	style := styles.Get(theme)
-	if style == nil {
+	if style == nil || theme == "" {
 		// default theme is dracula
 		style = styles.Dracula
 	}
 
 	iterator, err := lexer.Tokenise(nil, source)
 	if err != nil {
-		return source
+		return source, err
 	}
 
 	opts := []html.Option{html.Standalone(true)}
@@ -40,8 +40,8 @@ func Highlight(source, lang, theme, linenr string) string {
 	formatter := html.New(opts...)
 	err = formatter.Format(&buf, style, iterator)
 	if err != nil {
-		return source
+		return source, err
 	}
 
-	return buf.String()
+	return buf.String(), nil
 }

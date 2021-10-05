@@ -58,13 +58,18 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	// we need to replace escaped newline to literal newline
 	content := strings.Replace(i.Paste, `\n`, "\n", -1)
 
+	c.Set("Content-Type", "text/plain")
 	if qs.Language != "" {
-		highlighted := h.Highlight(content, qs.Language, qs.Theme, qs.LineNr)
+		highlighted, err := h.Highlight(content, qs.Language, qs.Theme, qs.LineNr)
+		if err != nil {
+			// they should still be able to get the plain text even if the highlighter is b0rked
+			c.Status(http.StatusOK).Send([]byte(content))
+
+			return err
+		}
 
 		c.Set("Content-Type", "text/html")
 		return c.Status(http.StatusOK).Send([]byte(highlighted))
 	}
-
-	c.Set("Content-Type", "text/plain")
 	return c.Status(http.StatusOK).Send([]byte(content))
 }
