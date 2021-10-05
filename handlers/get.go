@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"polarite/business/controllers"
 	"polarite/business/models"
+	h "polarite/platform/highlight"
 	"polarite/repository"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -53,6 +55,21 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		}
 	}
 
+	// we need to replace escaped newline to literal newline
+	content := strings.Replace(i.Paste, `\n`, "\n", -1)
+
 	c.Set("Content-Type", "text/plain")
-	return c.Status(http.StatusOK).Send([]byte(i.Paste))
+	if qs.Language != "" {
+		highlighted, err := h.Highlight(content, qs.Language, qs.Theme, qs.LineNr)
+		if err != nil {
+			// they should still be able to get the plain text even if the highlighter is b0rked
+			c.Status(http.StatusOK).Send([]byte(content))
+
+			return err
+		}
+
+		c.Set("Content-Type", "text/html")
+		return c.Status(http.StatusOK).Send([]byte(highlighted))
+	}
+	return c.Status(http.StatusOK).Send([]byte(content))
 }
