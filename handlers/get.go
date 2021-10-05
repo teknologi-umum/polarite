@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"polarite/business/controllers"
 	"polarite/business/models"
+	h "polarite/platform/highlight"
 	"polarite/repository"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -53,6 +55,16 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		}
 	}
 
+	// we need to replace escaped newline to literal newline
+	content := strings.Replace(i.Paste, `\n`, "\n", -1)
+
+	if qs.Language != "" {
+		highlighted := h.Highlight(content, qs.Language, qs.Theme, qs.LineNr)
+
+		c.Set("Content-Type", "text/html")
+		return c.Status(http.StatusOK).Send([]byte(highlighted))
+	}
+
 	c.Set("Content-Type", "text/plain")
-	return c.Status(http.StatusOK).Send([]byte(i.Paste))
+	return c.Status(http.StatusOK).Send([]byte(content))
 }
