@@ -26,6 +26,11 @@ type Error struct {
 }
 
 func Log(message interface{}) error {
+	// Immediate return if not running on production mode
+	if os.Getenv("ENVIRONMENT") != "production" {
+		return nil
+	}
+
 	j, err := json.Marshal(message)
 	if err != nil {
 		return err

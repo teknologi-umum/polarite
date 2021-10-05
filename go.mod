@@ -11,6 +11,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/gofiber/fiber/v2 v2.19.0
 	github.com/jackc/pgx/v4 v4.13.0
+	github.com/joho/godotenv v1.4.0
 )
 
 require (

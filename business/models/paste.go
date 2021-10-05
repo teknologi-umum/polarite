@@ -4,7 +4,7 @@ import "time"
 
 type Item struct {
 	ID        string    `db:"id"`
-	Paste     string    `db:"content" redis:"content"`
+	Paste     string    `db:"content"`
 	CreatedAt time.Time `db:"created"`
 }
 

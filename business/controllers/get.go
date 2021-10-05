@@ -34,11 +34,30 @@ func ReadItemFromDB(db *pgxpool.Conn, id string) (models.Item, error) {
 	if err != nil {
 		return models.Item{}, err
 	}
+	defer r.Close()
 
 	var result models.Item
 	err = pgxscan.ScanOne(&result, r)
 	if err != nil {
 		return models.Item{}, err
+	}
+
+	return result, nil
+}
+
+func ReadIDFromDB(db *pgxpool.Conn) ([]models.Item, error) {
+	defer db.Release()
+
+	r, err := db.Query(context.Background(), "SELECT id FROM paste")
+	if err != nil {
+		return []models.Item{}, err
+	}
+	defer r.Close()
+
+	var result []models.Item
+	err = pgxscan.ScanAll(&result, r)
+	if err != nil {
+		return []models.Item{}, err
 	}
 
 	return result, nil
