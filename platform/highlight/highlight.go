@@ -12,7 +12,6 @@ import (
 // Highlight the source using chroma in HTML format.
 // It will return the original content in plain text when it fails.
 func Highlight(source, lang, theme, linenr string) string {
-	var buf bytes.Buffer
 	lexer := lexers.Get(lang)
 	if lexer == nil {
 		lexer = lexers.Fallback
@@ -37,6 +36,7 @@ func Highlight(source, lang, theme, linenr string) string {
 		opts = append(opts, html.WithLineNumbers(true))
 	}
 
+	var buf bytes.Buffer
 	formatter := html.New(opts...)
 	err = formatter.Format(&buf, style, iterator)
 	if err != nil {
