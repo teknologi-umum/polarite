@@ -9,11 +9,11 @@ import (
 
 	"github.com/aidarkhanov/nanoid/v2"
 	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
-func InsertPasteToDB(db *pgxpool.Conn, body []byte) (models.Item, error) {
-	defer db.Release()
+func InsertPasteToDB(db *sqlx.Conn, body []byte) (models.Item, error) {
+	defer db.Close()
 
 	id, err := nanoid.New()
 	if err != nil {
@@ -21,7 +21,7 @@ func InsertPasteToDB(db *pgxpool.Conn, body []byte) (models.Item, error) {
 	}
 
 	creationTime := time.Now().Format(time.RFC3339)
-	r, err := db.Query(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3)", id, string(body), creationTime)
+	r, err := db.QueryContext(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3)", id, string(body), creationTime)
 	if err != nil {
 		return models.Item{}, err
 	}

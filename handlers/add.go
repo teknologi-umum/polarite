@@ -8,7 +8,7 @@ import (
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
 func (d *Dependency) AddPaste(c *fiber.Ctx) error {
@@ -19,7 +19,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).Send([]byte(repository.ErrBodyTooBig.Error()))
 	}
 
-	conn, err := d.DB.Acquire(c.Context())
+	conn, err := d.DB.Connx(c.Context())
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + data.ID))
 }
 
-func updateCachedID(conn *pgxpool.Conn, mem *bigcache.BigCache, id string) error {
+func updateCachedID(conn *sqlx.Conn, mem *bigcache.BigCache, id string) error {
 	ids, err := controllers.ReadIDFromMemory(mem)
 	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
 		return err
