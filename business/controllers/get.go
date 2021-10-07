@@ -29,13 +29,13 @@ func ReadItemFromCache(cache *redis.Client, id string) (models.Item, error) {
 
 func ReadItemFromDB(db *sqlx.Conn, id string) (models.Item, error) {
 	defer db.Close()
-	
+
 	r, err := db.QueryContext(context.Background(), "SELECT content FROM paste WHERE id = $1", id)
 	if err != nil {
 		return models.Item{}, err
 	}
 	defer r.Close()
-	
+
 	var result models.Item
 	err = sqlscan.ScanOne(&result, r)
 	if err != nil {

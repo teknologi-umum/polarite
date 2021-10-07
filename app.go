@@ -29,7 +29,7 @@ func App() *fiber.App {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	db, err := sqlx.Connect("postgres", dbURL)
 	if err != nil {
 		panic(err)
