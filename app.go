@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 	"polarite/handlers"
 	"time"
@@ -14,8 +13,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/lib/pq"
 )
 
 func App() *fiber.App {
@@ -26,12 +26,12 @@ func App() *fiber.App {
 	})
 
 	// Setup Postgres/Cockroach
-	dbConfig, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	dbURL, err := pq.ParseURL(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
 
-	db, err := pgxpool.ConnectConfig(context.Background(), dbConfig)
+	db, err := sqlx.Connect("postgres", dbURL)
 	if err != nil {
 		panic(err)
 	}

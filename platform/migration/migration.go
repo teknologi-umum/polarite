@@ -3,13 +3,13 @@ package migration
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
-func Migrate(conn *pgxpool.Conn) error {
-	defer conn.Release()
+func Migrate(conn *sqlx.Conn) error {
+	defer conn.Close()
 
-	r, err := conn.Query(
+	r, err := conn.QueryContext(
 		context.Background(),
 		`CREATE TABLE IF NOT EXISTS paste (
 			id VARCHAR(36) PRIMARY KEY NOT NULL,

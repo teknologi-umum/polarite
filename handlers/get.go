@@ -28,7 +28,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		return err
 	}
 
-	conn, err := d.DB.Acquire(c.Context())
+	conn, err := d.DB.Connx(c.Context())
 	if err != nil {
 		return err
 	}

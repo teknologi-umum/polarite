@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/allegro/bigcache/v3"
-	"github.com/georgysavva/scany/pgxscan"
+	"github.com/georgysavva/scany/sqlscan"
 	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
 func ReadItemFromCache(cache *redis.Client, id string) (models.Item, error) {
@@ -27,17 +27,17 @@ func ReadItemFromCache(cache *redis.Client, id string) (models.Item, error) {
 	return result, nil
 }
 
-func ReadItemFromDB(db *pgxpool.Conn, id string) (models.Item, error) {
-	defer db.Release()
+func ReadItemFromDB(db *sqlx.Conn, id string) (models.Item, error) {
+	defer db.Close()
 
-	r, err := db.Query(context.Background(), "SELECT content FROM paste WHERE id = $1", id)
+	r, err := db.QueryContext(context.Background(), "SELECT content FROM paste WHERE id = $1", id)
 	if err != nil {
 		return models.Item{}, err
 	}
 	defer r.Close()
 
 	var result models.Item
-	err = pgxscan.ScanOne(&result, r)
+	err = sqlscan.ScanOne(&result, r)
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -45,17 +45,17 @@ func ReadItemFromDB(db *pgxpool.Conn, id string) (models.Item, error) {
 	return result, nil
 }
 
-func ReadIDFromDB(db *pgxpool.Conn) ([]models.Item, error) {
-	defer db.Release()
+func ReadIDFromDB(db *sqlx.Conn) ([]models.Item, error) {
+	defer db.Close()
 
-	r, err := db.Query(context.Background(), "SELECT id FROM paste")
+	r, err := db.QueryContext(context.Background(), "SELECT id FROM paste")
 	if err != nil {
 		return []models.Item{}, err
 	}
 	defer r.Close()
 
 	var result []models.Item
-	err = pgxscan.ScanAll(&result, r)
+	err = sqlscan.ScanAll(&result, r)
 	if err != nil {
 		return []models.Item{}, err
 	}

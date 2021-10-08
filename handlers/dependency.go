@@ -3,11 +3,11 @@ package handlers
 import (
 	"github.com/allegro/bigcache/v3"
 	"github.com/go-redis/redis/v8"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
 type Dependency struct {
-	DB     *pgxpool.Pool
+	DB     *sqlx.DB
 	Memory *bigcache.BigCache
 	Cache  *redis.Client
 }
