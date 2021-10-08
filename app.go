@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lib/pq"
@@ -68,7 +69,7 @@ func App() *fiber.App {
 	app.Use(sentryfiber.New(sentryfiber.Options{}))
 	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.HomePage)
 	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.Get)
-	app.Post("/", r.AddPaste)
+	app.Post("/", limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), r.AddPaste)
 
 	return app
 }
