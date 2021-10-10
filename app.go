@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"polarite/business/controllers"
 	"polarite/handlers"
 	"time"
 
@@ -59,10 +60,13 @@ func App() *fiber.App {
 	}
 
 	// Setup Dependency injection struct
-	r := handlers.Dependency{
-		DB:     db,
+	pasteController := &controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+	}
+	r := handlers.Dependency{
+		DB:              db,
+		PasteController: pasteController,
 	}
 
 	app.Use(cors.New())
