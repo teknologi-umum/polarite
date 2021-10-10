@@ -8,14 +8,24 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    container: golang:1.17.2
+    services:
+      db:
+        image: mysql:8.0.26
+        ports:
+          - 3306:3306
+        environment:
+          MYSQL_DATABASE: polarite
+          MYSQL_ROOT_PASSWORD: password
+        cap_add:
+          - SYS_NICE
+      cache:
+        image: redis:6.2.6-alpine
+        ports:
+          - 6379:6379
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17.x
 
       - name: Installling dependencies
         run: go mod vendor
@@ -27,6 +37,9 @@ jobs:
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
         env:
           ENVIRONMENT: development
+          PORT: 3000
+          DATABASE_URL: mysql://root:password@db:3306/polarite
+          REDIS_URL: redis://@cache:6379
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
@@ -37,5 +50,3 @@ jobs:
         uses: github/codeql-action/analyze@v1
 
       - uses: codecov/codecov-action@v2
-        with:
-          flags: api
