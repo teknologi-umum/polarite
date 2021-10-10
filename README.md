@@ -18,7 +18,7 @@ Send a `POST` request to `link coming soon` with:
 
 - `Content-Type` header with the value of `text/plain`
 - Non-empty `request body` consisting of the text you want to store
-- `Authorization` header with the value of `Your Name <your email>`
+- `Authorization` header with the value of `Your Name <your email>` with a minimum of 15 characters.
 
 Example request:
 

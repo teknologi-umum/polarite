@@ -8,6 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Validate input for POST request.
+// The body size should be less than 5 MB.
+// Authorization header must be provided and be more than 15 characters.
 func ValidateInput(c *fiber.Ctx) error {
 	body := c.Body()
 
