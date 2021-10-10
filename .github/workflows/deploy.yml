@@ -16,11 +16,9 @@ jobs:
         image: mysql:8.0.26
         ports:
           - 3306:3306
-        environment:
+        env:
           MYSQL_DATABASE: polarite
           MYSQL_ROOT_PASSWORD: password
-        cap_add:
-          - SYS_NICE
       cache:
         image: redis:6.2.6-alpine
         ports:
