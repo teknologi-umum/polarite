@@ -3,8 +3,9 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	"polarite/business/controllers"
+	"polarite/business/models"
 	"polarite/repository"
+	"polarite/resources"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gofiber/fiber/v2"
@@ -14,17 +15,39 @@ import (
 func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	body := c.Body()
 
-	exceeded := controllers.ValidateSize(body)
-	if exceeded {
-		return c.Status(http.StatusBadRequest).Send([]byte(repository.ErrBodyTooBig.Error()))
-	}
-
 	conn, err := d.DB.Connx(c.Context())
 	if err != nil {
 		return err
 	}
 
-	data, err := controllers.InsertPasteToDB(conn, body)
+	// Check duplicates
+	hash, err := resources.Hash(body)
+	if err != nil {
+		return err
+	}
+
+	dup, i, err := d.PasteController.ReadHashFromDB(conn, hash)
+	if err != nil {
+		return err
+	}
+
+	if dup {
+		c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
+		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + i.ID))
+	}
+
+	conn, err = d.DB.Connx(c.Context())
+	if err != nil {
+		return err
+	}
+
+	paste := models.Item{
+		Paste: string(body),
+		Hash:  hash,
+		IP:    c.IP(),
+		User:  c.Locals("user").(string),
+	}
+	data, err := d.PasteController.InsertPasteToDB(conn, paste)
 	if err != nil {
 		return err
 	}
@@ -34,9 +57,13 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 		return err
 	}
 
+	conn, err = d.DB.Connx(c.Context())
+	if err != nil {
+		return err
+	}
 	defer d.updateCachedID(conn, data.ID)
 
-	c.Set("Content-Type", "text/plain")
+	c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
 	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + data.ID))
 }
 
@@ -47,7 +74,7 @@ func (d *Dependency) updateCachedID(conn *sqlx.Conn, id string) error {
 	}
 
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
-		pastes, err := controllers.ReadIDFromDB(conn)
+		pastes, err := d.PasteController.ReadIDFromDB(conn)
 		if err != nil {
 			return err
 		}

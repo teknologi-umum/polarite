@@ -12,7 +12,7 @@ func TestValidateSize(t *testing.T) {
 		t.Error("should be false, got:", a)
 	}
 
-	z := make([]byte, 1024*6)
+	z := make([]byte, 1024*1024*6)
 	rand.Read(z)
 	b := resources.ValidateSize(z)
 	if b != true {

@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/aidarkhanov/nanoid/v2"
-	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 )
 
-func InsertPasteToDB(db *sqlx.Conn, body []byte) (models.Item, error) {
+func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) (models.Item, error) {
 	defer db.Close()
 
 	id, err := nanoid.New()
@@ -21,7 +20,10 @@ func InsertPasteToDB(db *sqlx.Conn, body []byte) (models.Item, error) {
 	}
 
 	creationTime := time.Now().Format(time.RFC3339)
-	r, err := db.QueryContext(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3)", id, string(body), creationTime)
+	r, err := db.QueryContext(
+		context.Background(),
+		"INSERT INTO paste (id, content, hash, created, ip, user) VALUES (?, ?, ?, ?, ?, ?)",
+		id, paste.Paste, paste.Hash, creationTime, paste.IP, paste.User)
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -34,13 +36,13 @@ func InsertPasteToDB(db *sqlx.Conn, body []byte) (models.Item, error) {
 
 	return models.Item{
 		ID:        id,
-		Paste:     string(body),
+		Paste:     paste.Paste,
 		CreatedAt: t,
 	}, nil
 }
 
-func InsertPasteToCache(cache *redis.Client, paste models.Item) error {
-	_, err := cache.SetEX(context.Background(), "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
+func (c *PasteControllerImpl) InsertPasteToCache(paste models.Item) error {
+	_, err := c.Cache.SetEX(context.Background(), "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
 	if err != nil {
 		return err
 	}
