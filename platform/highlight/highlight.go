@@ -9,6 +9,10 @@ import (
 	"github.com/alecthomas/chroma/styles"
 )
 
+type Highlighter interface {
+	Highlight(source, lang, theme, linenr string) (string, error)
+}
+
 // Highlight the source using chroma in HTML format.
 // It will return the original content in plain text when it fails.
 func Highlight(source, lang, theme, linenr string) (string, error) {

@@ -25,6 +25,10 @@ type Error struct {
 	Error string `json:"message,omitempty"`
 }
 
+type Logger interface {
+	Log(message interface{}) error
+}
+
 func Log(message interface{}) error {
 	// Immediate return if not running on production mode
 	if os.Getenv("ENVIRONMENT") != "production" {
