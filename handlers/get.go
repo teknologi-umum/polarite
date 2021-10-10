@@ -34,7 +34,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	}
 
 	// Validate if the ID exists or not
-	ids, err := controllers.ReadIDFromMemory(d.Memory)
+	ids, err := d.PasteController.ReadIDFromMemory()
 	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
 		return err
 	}
@@ -45,7 +45,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 			return err
 		}
 
-		ids, err = controllers.UpdateIDListFromDB(d.Memory, pastes)
+		ids, err = d.PasteController.UpdateIDListFromDB(pastes)
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	}
 
 	// Try to fetch from Redis first
-	i, err := controllers.ReadItemFromCache(d.Cache, id)
+	i, err := d.PasteController.ReadItemFromCache(id)
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return err
 	}
@@ -69,7 +69,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 			return err
 		}
 
-		err = controllers.InsertPasteToCache(d.Cache, i)
+		err = d.PasteController.InsertPasteToCache(i)
 		if err != nil {
 			return err
 		}

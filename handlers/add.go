@@ -29,19 +29,19 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = controllers.InsertPasteToCache(d.Cache, data)
+	err = d.PasteController.InsertPasteToCache(data)
 	if err != nil {
 		return err
 	}
 
-	defer updateCachedID(conn, d.Memory, data.ID)
+	defer d.updateCachedID(conn, data.ID)
 
 	c.Set("Content-Type", "text/plain")
 	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + data.ID))
 }
 
-func updateCachedID(conn *sqlx.Conn, mem *bigcache.BigCache, id string) error {
-	ids, err := controllers.ReadIDFromMemory(mem)
+func (d *Dependency) updateCachedID(conn *sqlx.Conn, id string) error {
+	ids, err := d.PasteController.ReadIDFromMemory()
 	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
 		return err
 	}
@@ -52,13 +52,13 @@ func updateCachedID(conn *sqlx.Conn, mem *bigcache.BigCache, id string) error {
 			return err
 		}
 
-		_, err = controllers.UpdateIDListFromDB(mem, pastes)
+		_, err = d.PasteController.UpdateIDListFromDB(pastes)
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = controllers.UpdateIDListFromCache(mem, ids, id)
+	_, err = d.PasteController.UpdateIDListFromCache(ids, id)
 	if err != nil {
 		return err
 	}
