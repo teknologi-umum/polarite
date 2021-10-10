@@ -4,19 +4,20 @@ import (
 	"os"
 	"polarite/business/controllers"
 	"polarite/handlers"
+	"polarite/resources"
 	"time"
 
 	sentryfiber "github.com/aldy505/sentry-fiber"
 	"github.com/allegro/bigcache/v3"
 	sentry "github.com/getsentry/sentry-go"
 	"github.com/go-redis/redis/v8"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/lib/pq"
 )
 
 func App() *fiber.App {
@@ -27,7 +28,7 @@ func App() *fiber.App {
 	})
 
 	// Setup Postgres/Cockroach
-	dbURL, err := pq.ParseURL(os.Getenv("DATABASE_URL"))
+	dbURL, err := resources.ParseURL(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
