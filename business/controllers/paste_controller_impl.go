@@ -14,13 +14,13 @@ import (
 )
 
 type PasteControllerImpl struct {
-	*sqlx.Conn
-	*redis.Client
-	*bigcache.BigCache
+	Cache  *redis.Client
+	Memory *bigcache.BigCache
 }
 
 func (c *PasteControllerImpl) ReadItemFromCache(id string) (models.Item, error) {
-	r, err := c.Client.Get(context.Background(), "paste:"+id).Result()
+
+	r, err := c.Cache.Get(context.Background(), "paste:"+id).Result()
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -33,8 +33,10 @@ func (c *PasteControllerImpl) ReadItemFromCache(id string) (models.Item, error) 
 	return result, nil
 }
 
-func (c *PasteControllerImpl) ReadItemFromDB(id string) (models.Item, error) {
-	r, err := c.Conn.QueryContext(context.Background(), "SELECT content FROM paste WHERE id = $1", id)
+func (c *PasteControllerImpl) ReadItemFromDB(db *sqlx.Conn, id string) (models.Item, error) {
+	defer db.Close()
+
+	r, err := db.QueryContext(context.Background(), "SELECT content FROM paste WHERE id = $1", id)
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -49,8 +51,10 @@ func (c *PasteControllerImpl) ReadItemFromDB(id string) (models.Item, error) {
 	return result, nil
 }
 
-func (c *PasteControllerImpl) ReadIDFromDB() ([]models.Item, error) {
-	r, err := c.Conn.QueryContext(context.Background(), "SELECT id FROM paste")
+func (c *PasteControllerImpl) ReadIDFromDB(db *sqlx.Conn) ([]models.Item, error) {
+	defer db.Close()
+
+	r, err := db.QueryContext(context.Background(), "SELECT id FROM paste")
 	if err != nil {
 		return []models.Item{}, err
 	}
@@ -66,7 +70,7 @@ func (c *PasteControllerImpl) ReadIDFromDB() ([]models.Item, error) {
 }
 
 func (c *PasteControllerImpl) ReadIDFromMemory() ([]string, error) {
-	s, err := c.BigCache.Get("ids")
+	s, err := c.Memory.Get("ids")
 	if err != nil {
 		return []string{}, err
 	}
@@ -74,14 +78,16 @@ func (c *PasteControllerImpl) ReadIDFromMemory() ([]string, error) {
 	return strings.Split(string(s), ","), nil
 }
 
-func (c *PasteControllerImpl) InsertPasteToDB(body []byte) (models.Item, error) {
+func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, body []byte) (models.Item, error) {
+	defer db.Close()
+
 	id, err := nanoid.New()
 	if err != nil {
 		return models.Item{}, err
 	}
 
 	creationTime := time.Now().Format(time.RFC3339)
-	r, err := c.Conn.QueryContext(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3)", id, string(body), creationTime)
+	r, err := db.QueryContext(context.Background(), "INSERT INTO paste (id, content, created) VALUES ($1, $2, $3)", id, string(body), creationTime)
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -100,7 +106,7 @@ func (c *PasteControllerImpl) InsertPasteToDB(body []byte) (models.Item, error) 
 }
 
 func (c *PasteControllerImpl) InsertPasteToCache(paste models.Item) error {
-	_, err := c.Client.SetEX(context.Background(), "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
+	_, err := c.Cache.SetEX(context.Background(), "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
 	if err != nil {
 		return err
 	}
@@ -115,7 +121,7 @@ func (c *PasteControllerImpl) UpdateIDListFromDB(pastes []models.Item) ([]string
 	}
 
 	s := strings.Join(temp, ",")
-	err := c.BigCache.Set("ids", []byte(s))
+	err := c.Memory.Set("ids", []byte(s))
 	if err != nil {
 		return []string{}, err
 	}
@@ -126,7 +132,7 @@ func (c *PasteControllerImpl) UpdateIDListFromDB(pastes []models.Item) ([]string
 func (c *PasteControllerImpl) UpdateIDListFromCache(pastes []string, new string) (int, error) {
 	pastes = append(pastes, new)
 	s := strings.Join(pastes, ",")
-	err := c.BigCache.Set("ids", []byte(s))
+	err := c.Memory.Set("ids", []byte(s))
 	if err != nil {
 		return 0, err
 	}
