@@ -35,7 +35,7 @@ $ export PATH=$PATH:/usr/local/go/bin
 
 ### Getting Started
 
-1. [Fork](https://help.github.com/articles/fork-a-repo/) this repository to your own Github account and [clone](https://help.github.com/articles/cloning-a-repository/) it to your local device.
+1. [Fork](https://help.github.com/articles/fork-a-repo/) this repository to your own Github account and [clone](https://help.github.com/articles/cloning-a-repository/) it to your local machine.
 2. Run `go mod download` to install the dependencies needed.
 3. Get the database up and running. You can use `docker-compose up -d` for this. To stop the container, use `docker-compose stop`. To remove the container, use `docker-compose down`. Bear in mind that the data stored in the Redis and MongoDB of the Docker container is not persistent. Once it's stopped, the data will be erased.
 4. You can use [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or [Hoppscotch](https://hoppscotch.io/) to create an API request.
