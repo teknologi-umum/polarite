@@ -19,17 +19,15 @@ func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) 
 		return models.Item{}, err
 	}
 
-	creationTime := time.Now().Format(time.RFC3339)
 	r, err := db.QueryContext(
 		context.Background(),
-		"INSERT INTO paste (id, content, hash, created, ip, user) VALUES (?, ?, ?, ?, ?, ?)",
-		id, paste.Paste, paste.Hash, creationTime, paste.IP, paste.User)
+		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
+		id, paste.Paste, paste.Hash, paste.IP, paste.User)
 	if err != nil {
 		return models.Item{}, err
 	}
 	defer r.Close()
 
-	t, err := time.Parse(time.RFC3339, creationTime)
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -37,7 +35,7 @@ func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) 
 	return models.Item{
 		ID:        id,
 		Paste:     paste.Paste,
-		CreatedAt: t,
+		CreatedAt: time.Now(),
 	}, nil
 }
 
