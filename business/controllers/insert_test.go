@@ -22,7 +22,7 @@ func TestInsertPasteToDB(t *testing.T) {
 	defer c.Close()
 
 	paste := models.Item{
-		Paste: "Hello world!",
+		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 		IP:    "127.0.0.1",
 		User:  "example@test.com",
@@ -48,7 +48,7 @@ func TestInsertPasteToCache(t *testing.T) {
 
 	paste := models.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
-		Paste: "Hello world!",
+		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 		IP:    "127.0.0.1",
 		User:  "example@test.com",

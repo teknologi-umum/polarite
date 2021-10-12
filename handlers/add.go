@@ -45,7 +45,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	}
 
 	paste := models.Item{
-		Paste: string(body),
+		Paste: body,
 		Hash:  hash,
 		IP:    c.IP(),
 		User:  c.Locals("user").(string),

@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"polarite/business/models"
+	"polarite/resources"
 	"strings"
 
 	"github.com/georgysavva/scany/sqlscan"
@@ -21,7 +22,7 @@ func (c *PasteControllerImpl) ReadItemFromCache(id string) (models.Item, error) 
 
 	result := models.Item{
 		ID:    id,
-		Paste: r,
+		Paste: []byte(r),
 	}
 
 	return result, nil
@@ -42,7 +43,14 @@ func (c *PasteControllerImpl) ReadItemFromDB(db *sqlx.Conn, id string) (models.I
 		return models.Item{}, err
 	}
 
-	return result, nil
+	p, err := resources.DecompressContent(result.Paste)
+	if err != nil {
+		return models.Item{}, err
+	}
+
+	return models.Item{
+		Paste: p,
+	}, nil
 }
 
 func (c *PasteControllerImpl) ReadIDFromDB(db *sqlx.Conn) ([]models.Item, error) {

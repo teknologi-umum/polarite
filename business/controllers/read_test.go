@@ -4,6 +4,7 @@ import (
 	"context"
 	"polarite/business/controllers"
 	"polarite/business/models"
+	"polarite/resources"
 	"testing"
 )
 
@@ -25,8 +26,10 @@ func TestReadItemFromCache(t *testing.T) {
 		t.Error(err)
 	}
 
-	if i.Paste != "Hello world!" {
-		t.Error("i.Paste should be \"Hello world!\", got:", i.Paste)
+	paste := string(i.Paste)
+
+	if paste != "Hello world!" {
+		t.Error("i.Paste should be \"Hello world!\", got:", paste)
 	}
 }
 
@@ -39,9 +42,14 @@ func TestReadItemFromDB(t *testing.T) {
 	}
 	defer c.Close()
 
+	comp, err := resources.CompressContent([]byte("Hello world!"))
+	if err != nil {
+		t.Error(err)
+	}
+
 	paste := models.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
-		Paste: "Hello world!",
+		Paste: comp,
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 		IP:    "127.0.0.1",
 		User:  "example@test.com",
@@ -76,8 +84,8 @@ func TestReadItemFromDB(t *testing.T) {
 		t.Error(err)
 	}
 
-	if i.Paste != paste.Paste {
-		t.Error("i.Paste should be "+paste.Paste+", got:", i.Paste)
+	if string(i.Paste) != "Hello world!" {
+		t.Error("i.Paste should be \"Hello world!\", got:", string(i.Paste))
 	}
 }
 
@@ -92,7 +100,7 @@ func TestReadIDFromDB(t *testing.T) {
 
 	paste := models.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
-		Paste: "Hello world!",
+		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 		IP:    "127.0.0.1",
 		User:  "example@test.com",
@@ -170,7 +178,7 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 
 	paste := models.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
-		Paste: "Hello world!",
+		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 		IP:    "127.0.0.1",
 		User:  "example@test.com",

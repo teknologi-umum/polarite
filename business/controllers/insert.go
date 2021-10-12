@@ -5,6 +5,7 @@ package controllers
 import (
 	"context"
 	"polarite/business/models"
+	"polarite/resources"
 	"time"
 
 	"github.com/aidarkhanov/nanoid/v2"
@@ -19,10 +20,15 @@ func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) 
 		return models.Item{}, err
 	}
 
+	p, err := resources.CompressContent(paste.Paste)
+	if err != nil {
+		return models.Item{}, err
+	}
+
 	r, err := db.QueryContext(
 		context.Background(),
 		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
-		id, paste.Paste, paste.Hash, paste.IP, paste.User)
+		id, p, paste.Hash, paste.IP, paste.User)
 	if err != nil {
 		return models.Item{}, err
 	}
