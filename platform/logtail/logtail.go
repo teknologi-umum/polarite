@@ -1,3 +1,4 @@
+// See https://logtail.com/
 package logtail
 
 import (
@@ -29,6 +30,18 @@ type Logger interface {
 	Log(message interface{}) error
 }
 
+// Sends a log to Logtail, a logging service.
+//
+// Sample usage:
+//
+//      logtail.Log(logtail.Error{
+//        Meta: {
+//          Level: "error",
+//          Date: time.Now().Format(time.RFC3339),
+//          Source: "handlers/get.go",
+//        },
+//        Error: "Some bird flown out of town!",
+//      })
 func Log(message interface{}) error {
 	// Immediate return if not running on production mode
 	if os.Getenv("ENVIRONMENT") != "production" {

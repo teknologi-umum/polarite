@@ -12,6 +12,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// Post Route to add a paste from somewhere.
+// If the submitted paste is a duplicate, it will quickly return
+// a generated ID based on the SHA224 hash.
 func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	body := c.Body()
 
@@ -67,6 +70,9 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + data.ID))
 }
 
+// A private function to run without wanting to wait.
+// This will return behind the scene once, preferably without
+// the use of goroutine.
 func (d *Dependency) updateCachedID(conn *sqlx.Conn, id string) error {
 	ids, err := d.PasteController.ReadIDFromMemory()
 	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
