@@ -58,7 +58,7 @@ func Setup() {
 	r, err := c.QueryContext(context.Background(), `CREATE TABLE IF NOT EXISTS paste (
 		id VARCHAR(36) PRIMARY KEY NOT NULL,
 		content MEDIUMTEXT NOT NULL,
-		created TIMESTAMP NOT NULL,
+		created TIMESTAMP NOT NULL DEFAULT NOW(),
 		hash VARCHAR(255) UNIQUE NOT NULL,
 		ip VARCHAR(20) NOT NULL,
 		user VARCHAR(255) NOT NULL

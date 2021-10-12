@@ -1,15 +1,23 @@
--- 2021-10-10 15:23:26
+-- 2021-10-12 12:20:02
+
+SET NAMES utf8;
+SET time_zone = '+00:00';
+SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
+SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `paste` (
   `id` varchar(36) NOT NULL,
   `content` mediumtext NOT NULL,
-  `created` timestamp NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `hash` varchar(255) NOT NULL,
   `ip` varchar(20) NOT NULL,
   `user` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `hash` (`hash`)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 INSERT INTO `paste` (`id`, `content`, `created`, `hash`, `ip`, `user`) VALUES
 ('2Dq4YrZcmaATmRlawpPQS',	'/**\n * Returns a language string that match with Shiki\'s language specification,\n * find it here: https://github.com/shikijs/shiki/blob/main/docs/languages.md\n * If the name is similar, we\'ll just convert it to lower case.\n * @param {String} language Language from the list\n * @returns {String} Shiki acceptable language\n */\nexport function convert(language: string): string {\n  if (language === \'C++\') return \'cpp\';\n  if (language === \'C#\') return \'csharp\';\n  return language.toLowerCase();\n}',	'2021-10-10 15:00:13',	'909594b7555da94b4b5dddd72d81d2697c62323b61deafd93b951a7c',	'127.0.0.1',	'test@example.com'),

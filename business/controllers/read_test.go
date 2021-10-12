@@ -5,7 +5,6 @@ import (
 	"polarite/business/controllers"
 	"polarite/business/models"
 	"testing"
-	"time"
 )
 
 func TestReadItemFromCache(t *testing.T) {
@@ -50,11 +49,10 @@ func TestReadItemFromDB(t *testing.T) {
 
 	r, err := c.QueryContext(
 		context.Background(),
-		"INSERT INTO paste (id, content, hash, created, ip, user) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
 		paste.ID,
 		paste.Paste,
 		paste.Hash,
-		time.Now().Format(time.RFC3339),
 		paste.IP,
 		paste.User,
 	)
@@ -67,7 +65,6 @@ func TestReadItemFromDB(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	defer c.Close()
 
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
@@ -103,11 +100,10 @@ func TestReadIDFromDB(t *testing.T) {
 
 	r, err := c.QueryContext(
 		context.Background(),
-		"INSERT INTO paste (id, content, hash, created, ip, user) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
 		paste.ID,
 		paste.Paste,
 		paste.Hash,
-		time.Now().Format(time.RFC3339),
 		paste.IP,
 		paste.User,
 	)
@@ -120,7 +116,6 @@ func TestReadIDFromDB(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	defer c.Close()
 
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
@@ -183,11 +178,10 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 
 	r, err := c.QueryContext(
 		context.Background(),
-		"INSERT INTO paste (id, content, hash, created, ip, user) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
 		paste.ID,
 		paste.Paste,
 		paste.Hash,
-		time.Now().Format(time.RFC3339),
 		paste.IP,
 		paste.User,
 	)

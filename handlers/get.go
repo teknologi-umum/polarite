@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Get route to find a paste by given ID (on path parameters).
 func (d *Dependency) Get(c *fiber.Ctx) error {
 	// Parse the URL param first
 	id := c.Params("id")
