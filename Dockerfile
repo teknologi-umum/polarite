@@ -1,4 +1,4 @@
-FROM golang:1.17.1-buster
+FROM golang:1.17.2-buster
 
 ENV ENVIRONMENT=production
 

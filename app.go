@@ -5,6 +5,7 @@ import (
 	"polarite/business/controllers"
 	"polarite/handlers"
 	"polarite/resources"
+	"strings"
 	"time"
 
 	sentryfiber "github.com/aldy505/sentry-fiber"
@@ -22,18 +23,23 @@ import (
 
 func App() *fiber.App {
 	app := fiber.New(fiber.Config{
-		CaseSensitive: true,
-		StrictRouting: false,
-		ErrorHandler:  handlers.ErrorHandler,
+		AppName:                 "Teknologi Umum - Polarite",
+		CaseSensitive:           true,
+		StrictRouting:           false,
+		ErrorHandler:            handlers.ErrorHandler,
+		EnableTrustedProxyCheck: true,
+		BodyLimit:               1024 * 1024 * 6,
+		WriteTimeout:            30 * time.Second,
+		ReadTimeout:             30 * time.Second,
 	})
 
-	// Setup Postgres/Cockroach
+	// Setup MySQL/Planetscale
 	dbURL, err := resources.ParseURL(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
 
-	db, err := sqlx.Connect("postgres", dbURL)
+	db, err := sqlx.Connect("mysql", dbURL)
 	if err != nil {
 		panic(err)
 	}
@@ -70,11 +76,15 @@ func App() *fiber.App {
 		PasteController: pasteController,
 	}
 
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: strings.Join([]string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead}, ","),
+		AllowHeaders: fiber.HeaderAuthorization,
+	}))
 	app.Use(sentryfiber.New(sentryfiber.Options{}))
 	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.HomePage)
 	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.Get)
-	app.Post("/", limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), r.AddPaste)
+	app.Post("/", limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
 
 	return app
 }

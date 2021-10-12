@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    restart: on-failure
+    ports:
+      - 3000:3000
+    env_file: .env
+    environment:
+      PORT: 3000
+      DATABASE_URL: mysql://root:password@db:3306/polarite
+      REDIS_URL: redis://@cache:6379/
+    depends_on:
+      - db
+      - cache
+  db:
+    image: mysql:8.0.26
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: polarite
+      MYSQL_ROOT_PASSWORD: password
+    cap_add:
+      - SYS_NICE
+  cache:
+    image: redis:6.2.6-alpine
+    restart: always
+    ports:
+      - 6379:6379
