@@ -42,6 +42,7 @@ jobs:
           PORT: 3000
           DATABASE_URL: mysql://root:password@db:3306/polarite
           REDIS_URL: redis://@cache:6379
+          TZ: UTC
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
