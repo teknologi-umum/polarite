@@ -83,7 +83,11 @@
 
         fetch("/", {
           method: "POST",
-          headers: { "Content-Type": "text/plain", Accept: "text/plain", Authorization: "Polarite Web <teknologi.umum@gmail.com>" },
+          headers: {
+            "Content-Type": "text/plain",
+            Accept: "text/plain",
+            Authorization: "Polarite Web Client <polarite@teknologiumum.com>"
+          },
           body: text,
         })
           .then((resp) => resp.text())

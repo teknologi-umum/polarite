@@ -20,7 +20,6 @@ import (
 	"github.com/gofiber/template/html"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/lib/pq"
 )
 
 func App() *fiber.App {
