@@ -13,7 +13,7 @@ func Migrate(conn *sqlx.Conn) error {
 		context.Background(),
 		`CREATE TABLE IF NOT EXISTS paste (
 			id VARCHAR(36) PRIMARY KEY NOT NULL,
-			content MEDIUMTEXT NOT NULL,
+			content MEDIUMBLOB NOT NULL,
 			created TIMESTAMP NOT NULL DEFAULT NOW(),
 			hash VARCHAR(255) UNIQUE NOT NULL,
 			ip VARCHAR(20) NOT NULL,

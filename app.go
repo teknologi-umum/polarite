@@ -82,8 +82,8 @@ func App() *fiber.App {
 		AllowHeaders: fiber.HeaderAuthorization,
 	}))
 	app.Use(sentryfiber.New(sentryfiber.Options{}))
-	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.HomePage)
-	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Second, CacheControl: true}), r.Get)
+	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.HomePage)
+	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.Get)
 	app.Post("/", limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
 
 	return app

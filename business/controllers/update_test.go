@@ -13,14 +13,14 @@ func TestUpdateIDListFromDB(t *testing.T) {
 	paste := []models.Item{
 		{
 			ID:    "wNnwj138ne9ZaWmNADwIg",
-			Paste: "Hello world!",
+			Paste: []byte("Hello world!"),
 			Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 			IP:    "127.0.0.1",
 			User:  "example@test.com",
 		},
 		{
 			ID:    "b_ZbHoI3gQTv4mR0CDLNQ",
-			Paste: "Java sucks",
+			Paste: []byte("Java sucks"),
 			Hash:  "da1d7ce7e6bdc6f5c88b448afbb0d14afaa338d0f0b6f85c02b451e2",
 			IP:    "127.0.0.1",
 			User:  "example@test.com",

@@ -81,7 +81,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	}
 
 	// we need to replace escaped newline to literal newline
-	content := strings.Replace(i.Paste, `\n`, "\n", -1)
+	content := strings.Replace(string(i.Paste), `\n`, "\n", -1)
 
 	if qs.Language != "" {
 		highlighted, err := h.Highlight(content, qs.Language, qs.Theme, qs.LineNr)

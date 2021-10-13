@@ -4,7 +4,7 @@ import "time"
 
 type Item struct {
 	ID        string    `db:"id"`
-	Paste     string    `db:"content"`
+	Paste     []byte    `db:"content"`
 	CreatedAt time.Time `db:"created"`
 	Hash      string    `db:"hash"`
 	IP        string    `db:"ip"`
