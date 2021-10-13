@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,5 +9,5 @@ import (
 // and get the corresponding link.
 func (d *Dependency) HomePage(c *fiber.Ctx) error {
 	// serves the home page
-	return c.Status(http.StatusOK).Send([]byte("Coming soon"))
+	return c.Render("home", nil)
 }

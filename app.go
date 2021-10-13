@@ -17,6 +17,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/template/html"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -31,6 +32,7 @@ func App() *fiber.App {
 		BodyLimit:               1024 * 1024 * 6,
 		WriteTimeout:            30 * time.Second,
 		ReadTimeout:             30 * time.Second,
+		Views:         html.New("./views", ".html"),
 	})
 
 	// Setup MySQL/Planetscale

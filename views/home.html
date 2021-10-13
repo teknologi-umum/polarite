@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Polarite</title>
+    <style>
+      * { padding: 0; margin: 0; box-sizing: border-box; }
+      html, body, form, textarea { width: 100%; height: 100%; }
+      textarea { display: block; padding: 4rem 1rem 1rem 1rem; border: none; outline: none; resize: none; }
+      button { position: absolute; left: 1rem; top: 1rem; height: 2rem; width: 4rem; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <textarea id="textarea" placeholder="Start typing..."></textarea>
+    <button onclick="submit()" role="submit" tabindex="-1">SAVE</button>
+
+    <script>
+      function submit() {
+        const text = document.getElementById("textarea").value;
+
+        fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain",
+            Accept: "text/plain",
+            Authorization: "Polarite Web Client <polarite@teknologiumum.com>"
+          },
+          body: text,
+        })
+          .then((resp) => resp.text())
+          .then((url) => (window.location.href = url))
+          .catch((err) => console.error(err));
+      }
+    </script>
+  </body>
+</html>
