@@ -67,7 +67,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	defer d.updateCachedID(conn, data.ID)
 
 	c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
-	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + data.ID))
+	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + data.ID))
 }
 
 // A private function to run without wanting to wait.
