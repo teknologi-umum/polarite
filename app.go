@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"polarite/business/controllers"
 	"polarite/handlers"
@@ -16,6 +17,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/template/html"
 	"github.com/jmoiron/sqlx"
@@ -32,7 +34,7 @@ func App() *fiber.App {
 		BodyLimit:               1024 * 1024 * 6,
 		WriteTimeout:            30 * time.Second,
 		ReadTimeout:             30 * time.Second,
-		Views:         html.New("./views", ".html"),
+		Views:                   html.New("./views", ".html"),
 	})
 
 	// Setup MySQL/Planetscale
@@ -78,15 +80,23 @@ func App() *fiber.App {
 		PasteController: pasteController,
 	}
 
-	app.Use(cors.New(cors.Config{
+	corsMiddleware := cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowMethods: strings.Join([]string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead}, ","),
 		AllowHeaders: fiber.HeaderAuthorization,
-	}))
+	})
 	app.Use(sentryfiber.New(sentryfiber.Options{}))
+	app.Use("/assets", filesystem.New(filesystem.Config{
+		Root:         http.Dir("./views/assets"),
+		Browse:       false,
+		Index:        "404.html",
+		NotFoundFile: "404.html",
+		MaxAge:       60 * 60 * 24,
+	}))
+
 	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.HomePage)
-	app.Get("/:id", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.Get)
-	app.Post("/", limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
+	app.Get("/:id", corsMiddleware, cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.Get)
+	app.Post("/", corsMiddleware, limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
 
 	return app
 }
