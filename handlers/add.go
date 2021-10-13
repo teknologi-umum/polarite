@@ -36,7 +36,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 
 	if dup {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
-		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL + i.ID))
+		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + i.ID))
 	}
 
 	conn, err = d.DB.Connx(c.Context())
