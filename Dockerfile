@@ -8,6 +8,6 @@ COPY . .
 
 RUN go mod download
 
-RUN go build main.go app.go
+RUN go build .
 
-CMD [ "./main" ]
+CMD [ "./polarite" ]
