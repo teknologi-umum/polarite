@@ -19,7 +19,11 @@
 
         fetch("/", {
           method: "POST",
-          headers: { "Content-Type": "text/plain", Accept: "text/plain" },
+          headers: {
+            "Content-Type": "text/plain",
+            Accept: "text/plain",
+            Authorization: "Polarite Web Client <polarite@teknologiumum.com>"
+          },
           body: text,
         })
           .then((resp) => resp.text())
