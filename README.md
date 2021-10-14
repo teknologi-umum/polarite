@@ -2,15 +2,16 @@
 <img src="./.github/logo.png" width="1000px">
 </kbd>
 
-<div style="text-align:center;">
-<strong>Polarite</strong> is a Pastebin alternative made for simplicity written in Go.
+---
+
+<div align="center">
+    <strong><a href="https://polarite.teknologiumum.com">Polarite</a></strong> is a Pastebin alternative made for simplicity written in Go.
 </div>
 
 ## Usage
 
 ### Web Interface
-
-Soon.
+Visit https://polarite.teknologiumum.com
 
 ### API
 
@@ -28,12 +29,13 @@ curl \
     -H "Content-Type: text/plain" \
     -H "Authorization: John Doe <john@example.com>" \
     -X POST \
-    -d "Hello World" <link coming soon>
+    -d "Hello World" \
+    https://polarite.teknologiumum.com/
 ```
 
 - Javascript (via Fetch API)
 ```js
-fetch("link coming soon", {
+fetch("https://polarite.teknologiumum.com/", {
     method: "POST",
     headers: {
         "Content-Type": "text/plain",
@@ -52,7 +54,7 @@ import (
 
 func Polarite() {
     body := strings.NewReader("Hello world")
-    req, err := http.NewRequest(http.MethodPost, "link coming soon", body)
+    req, err := http.NewRequest(http.MethodPost, "https://polarite.teknologiumum.com/", body)
     req.Header.Add("Content-Type", "text/plain")
     req.Header.Add("Authorization", "John Doe <john@example.com>")
 
@@ -67,7 +69,7 @@ using System.Net.Http;
 
 var client = new HttpClient();
 var request = new HttpRequestMessage() {
-    RequestUri = new Uri("link coming soon"),
+    RequestUri = new Uri("https://polarite.teknologiumum.com/"),
     Method = HttpMethod.Post,
     Headers = {
         { "Authorization", "John Doe <john@example.com>" },
