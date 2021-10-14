@@ -31,13 +31,15 @@ $ export PATH=$PATH:/usr/local/go/bin
 # Or put it on your ~/.bashrc or equivalent file.
 ```
 
-2. [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) if you want to test the app using docker. (Optional)
+2. MySQL dan Redis database running on your local machine. Also might be achievable through the provided `docker-compose.yml` file.
+
+3. [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) if you want to test the app or run the database servers. (Optional)
 
 ### Getting Started
 
 1. [Fork](https://help.github.com/articles/fork-a-repo/) this repository to your own Github account and [clone](https://help.github.com/articles/cloning-a-repository/) it to your local machine.
 2. Run `go mod download` to install the dependencies needed.
-3. Get the database up and running. You can use `docker-compose up -d` for this. To stop the container, use `docker-compose stop`. To remove the container, use `docker-compose down`. Bear in mind that the data stored in the Redis and MongoDB of the Docker container is not persistent. Once it's stopped, the data will be erased.
+3. Get the database up and running. You can use `docker-compose up -d` for this. To stop the container, use `docker-compose stop`. To remove the container, use `docker-compose down`. Bear in mind that the data stored in the Redis and MySQL of the Docker container are not persistent. Once it's stopped, the data will be erased.
 4. You can use [Postman](https://www.postman.com/), [Insomnia](https://insomnia.rest/) or [Hoppscotch](https://hoppscotch.io/) to create an API request.
 5. Rename `.env.example` to `.env` and fill the config key=value needed. The one's necessary is `ENVIRONMENT`, `PORT`, `DATABASE_URL` and `REDIS_URL`, you may leave everything else blank. If you're using the Docker Compose file to spin up the database, your `.env` should be:
 
@@ -49,8 +51,7 @@ REDIS_URL=redis://@localhost:6379/
 LOGTAIL_TOKEN=
 SENTRY_DSN=
 ```
-
-6. Run `go run main.go app.go` to start the development server.
+6. Run `go run .` to start the development server.
 7. Have fun!
 
 You are encouraged to use [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0-beta.2/) for your commit message. But it's not really compulsory.
