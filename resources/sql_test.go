@@ -16,6 +16,13 @@ func TestParseURL_MySQL(t *testing.T) {
 	}
 }
 
+func TestParseURL_MySQLErr(t *testing.T) {
+	u, err := resources.ParseURL("mysql://@#$%^&*!")
+	if err == nil {
+		t.Error("an error should've been thrown, got:", u)
+	}
+}
+
 func TestParseURL_Postgres(t *testing.T) {
 	u, err := resources.ParseURL("postgres://root:password@localhost:5432/polarite?ssl=verify")
 	if err != nil {
@@ -24,6 +31,24 @@ func TestParseURL_Postgres(t *testing.T) {
 
 	if u != "user=root password=password host=localhost port=5432 dbname=polarite ssl=verify" {
 		t.Error("u is not \"user=root password=password host=localhost port=5432 dbname=polarite ssl=verify\", got:", u)
+	}
+}
+
+func TestParseURL_Postgresql(t *testing.T) {
+	u, err := resources.ParseURL("postgresql://root:password@localhost:5432/polarite?ssl=verify")
+	if err != nil {
+		t.Error("an error was thrown:", err)
+	}
+
+	if u != "user=root password=password host=localhost port=5432 dbname=polarite ssl=verify" {
+		t.Error("u is not \"user=root password=password host=localhost port=5432 dbname=polarite ssl=verify\", got:", u)
+	}
+}
+
+func TestParseURL_PostgresErr(t *testing.T) {
+	u, err := resources.ParseURL("postgres://@#$%^&*!")
+	if err == nil {
+		t.Error("an error should've been thrown, got:", u)
 	}
 }
 

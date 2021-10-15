@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Polarite - Paste your text of anything!</title>
+    <title>Polarite - {{.Truncated}}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#9863fe" />
@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
     <link rel="manifest" href="/assets/site.webmanifest" />
     <meta name="keywords" content="polarite, teknologi umum, carbon, code, screenshot, programming, developer" />
-    <meta name="description" content="Paste your text of anything!" />
+    <meta name="description" content="Paste your text of anything! - {{.Truncated}}" />
     <meta name="subject" content="Paste your text of anything!" />
     <meta name="copyright" content="Teknologi Umum" />
     <meta name="language" content="en-US" />
@@ -45,7 +45,7 @@
     <meta property="og:locale" content="en-US" />
     <meta
       property="og:description"
-      content="Paste your text of anything!"
+      content="Paste your text of anything! - {{.Truncated}}"
     />
 
     <meta name="twitter:card" content="summary_large_image" />
@@ -54,7 +54,7 @@
     <meta name="twitter:title" content="Polarite" />
     <meta
       name="twitter:description"
-      content="Paste your text of anything!"
+      content="Paste your text of anything! - {{.Truncated}}"
     />
     <meta name="twitter:image" content="https://polarite.teknologiumum.com/assets/social.jpg" />
 
@@ -68,44 +68,32 @@
     <meta http-equiv="Page-Exit" content="RevealTrans(Duration=1.0,Transition=1)" />
     <style>
       * { padding: 0; margin: 0; box-sizing: border-box; }
-      html, body, form, textarea { width: 100%; height: 100%; }
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0.5rem;
+      }
+      pre {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          font-size: 0.75rem;
+          font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+      }
       @media (prefers-color-scheme: dark) {
-        textarea {
+        body {
           background-color: rgb(28,27,34);
           color: rgb(251,251,254);
         }
       }
       @media (prefers-color-scheme: light) {
-        textarea {
+        body {
           background-color: rgb(251,251,254);
           color: rgb(28,27,34);
         }
       }
-      textarea { display: block; padding: 4rem 1rem 1rem 1rem; border: none; outline: none; resize: none; font-size: 1rem; font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace; }
-      button { position: absolute; left: 1rem; top: 1rem; height: 2rem; width: 4rem; cursor: pointer; font-size: 1rem; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; }
     </style>
   </head>
   <body>
-    <textarea id="textarea" placeholder="Start typing..."></textarea>
-    <button onclick="submit()" role="submit" tabindex="-1">SAVE</button>
-
-    <script>
-      function submit() {
-        const text = document.getElementById("textarea").value;
-
-        fetch("/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain",
-            Accept: "text/plain",
-            Authorization: "Polarite Web Client <polarite@teknologiumum.com>"
-          },
-          body: text,
-        })
-          .then((resp) => resp.text())
-          .then((url) => (window.location.href = url))
-          .catch((err) => console.error(err));
-      }
-    </script>
+    <pre>{{.Content}}</pre>
   </body>
 </html>
