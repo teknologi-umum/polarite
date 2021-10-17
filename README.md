@@ -15,7 +15,7 @@ Visit https://polarite.teknologiumum.com
 
 ### API
 
-Send a `POST` request to `link coming soon` with:
+Send a `POST` request to `https://polarite.teknologiumum.com` with:
 
 - `Content-Type` header with the value of `text/plain`
 - Non-empty `request body` consisting of the text you want to store
