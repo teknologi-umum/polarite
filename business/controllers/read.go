@@ -11,11 +11,10 @@ import (
 	"strings"
 
 	"github.com/georgysavva/scany/sqlscan"
-	"github.com/jmoiron/sqlx"
 )
 
-func (c *PasteControllerImpl) ReadItemFromCache(id string) (models.Item, error) {
-	r, err := c.Cache.Get(context.Background(), "paste:"+id).Result()
+func (c *PasteControllerImpl) ReadItemFromCache(ctx context.Context, id string) (models.Item, error) {
+	r, err := c.Cache.Get(ctx, "paste:"+id).Result()
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -28,10 +27,14 @@ func (c *PasteControllerImpl) ReadItemFromCache(id string) (models.Item, error) 
 	return result, nil
 }
 
-func (c *PasteControllerImpl) ReadItemFromDB(db *sqlx.Conn, id string) (models.Item, error) {
-	defer db.Close()
+func (c *PasteControllerImpl) ReadItemFromDB(ctx context.Context, id string) (models.Item, error) {
+	conn, err := c.DB.Connx(ctx)
+	if err != nil {
+		return models.Item{}, err
+	}
+	defer conn.Close()
 
-	r, err := db.QueryContext(context.Background(), "SELECT content FROM paste WHERE id = ?", id)
+	r, err := conn.QueryContext(ctx, "SELECT content FROM paste WHERE id = ?", id)
 	if err != nil {
 		return models.Item{}, err
 	}
@@ -53,10 +56,14 @@ func (c *PasteControllerImpl) ReadItemFromDB(db *sqlx.Conn, id string) (models.I
 	}, nil
 }
 
-func (c *PasteControllerImpl) ReadIDFromDB(db *sqlx.Conn) ([]models.Item, error) {
-	defer db.Close()
+func (c *PasteControllerImpl) ReadIDFromDB(ctx context.Context) ([]models.Item, error) {
+	conn, err := c.DB.Connx(ctx)
+	if err != nil {
+		return []models.Item{}, err
+	}
+	defer conn.Close()
 
-	r, err := db.QueryContext(context.Background(), "SELECT id FROM paste")
+	r, err := conn.QueryContext(ctx, "SELECT id FROM paste")
 	if err != nil {
 		return []models.Item{}, err
 	}
@@ -80,10 +87,14 @@ func (c *PasteControllerImpl) ReadIDFromMemory() ([]string, error) {
 	return strings.Split(string(s), ","), nil
 }
 
-func (c *PasteControllerImpl) ReadHashFromDB(db *sqlx.Conn, h string) (bool, models.Item, error) {
-	defer db.Close()
+func (c *PasteControllerImpl) ReadHashFromDB(ctx context.Context, h string) (bool, models.Item, error) {
+	conn, err := c.DB.Connx(ctx)
+	if err != nil {
+		return false, models.Item{}, err
+	}
+	defer conn.Close()
 
-	r, err := db.QueryContext(context.Background(), "SELECT id FROM paste WHERE hash = ?", h)
+	r, err := conn.QueryContext(ctx, "SELECT id FROM paste WHERE hash = ?", h)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, models.Item{}, nil

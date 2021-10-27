@@ -13,13 +13,8 @@ func TestInsertPasteToDB(t *testing.T) {
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
-
-	c, err := db.Connx(context.Background())
-	if err != nil {
-		t.Error(err)
-	}
-	defer c.Close()
 
 	paste := models.Item{
 		Paste: []byte("Hello world!"),
@@ -28,7 +23,7 @@ func TestInsertPasteToDB(t *testing.T) {
 		User:  "example@test.com",
 	}
 
-	i, err := p.InsertPasteToDB(c, paste)
+	i, err := p.InsertPasteToDB(context.Background(), paste)
 	if err != nil {
 		t.Error(err)
 	}
@@ -44,6 +39,7 @@ func TestInsertPasteToCache(t *testing.T) {
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
 	paste := models.Item{
@@ -54,7 +50,7 @@ func TestInsertPasteToCache(t *testing.T) {
 		User:  "example@test.com",
 	}
 
-	err := p.InsertPasteToCache(paste)
+	err := p.InsertPasteToCache(context.Background(), paste)
 	if err != nil {
 		t.Error(err)
 	}

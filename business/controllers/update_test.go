@@ -30,6 +30,7 @@ func TestUpdateIDListFromDB(t *testing.T) {
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
 	i, err := p.UpdateIDListFromDB(paste)
@@ -61,6 +62,7 @@ func TestUpdateIDListFromCache(t *testing.T) {
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
 	i, err := p.UpdateIDListFromCache([]string{"wNnwj138ne9ZaWmNADwIg", "b_ZbHoI3gQTv4mR0CDLNQ"}, "DQNYSjRH7AYthVmJ7P9-T")

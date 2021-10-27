@@ -9,11 +9,14 @@ import (
 	"time"
 
 	"github.com/aidarkhanov/nanoid/v2"
-	"github.com/jmoiron/sqlx"
 )
 
-func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) (models.Item, error) {
-	defer db.Close()
+func (c *PasteControllerImpl) InsertPasteToDB(ctx context.Context, paste models.Item) (models.Item, error) {
+	conn, err := c.DB.Connx(ctx)
+	if err != nil {
+		return models.Item{}, err
+	}
+	defer conn.Close()
 
 	id, err := nanoid.New()
 	if err != nil {
@@ -25,8 +28,8 @@ func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) 
 		return models.Item{}, err
 	}
 
-	r, err := db.QueryContext(
-		context.Background(),
+	r, err := conn.QueryContext(
+		ctx,
 		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
 		id, p, paste.Hash, paste.IP, paste.User)
 	if err != nil {
@@ -45,8 +48,8 @@ func (c *PasteControllerImpl) InsertPasteToDB(db *sqlx.Conn, paste models.Item) 
 	}, nil
 }
 
-func (c *PasteControllerImpl) InsertPasteToCache(paste models.Item) error {
-	_, err := c.Cache.SetEX(context.Background(), "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
+func (c *PasteControllerImpl) InsertPasteToCache(ctx context.Context, paste models.Item) error {
+	_, err := c.Cache.SetEX(ctx, "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
 	if err != nil {
 		return err
 	}

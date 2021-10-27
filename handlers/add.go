@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"polarite/business/models"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jmoiron/sqlx"
 )
 
 // Post Route to add a paste from somewhere.
@@ -18,18 +18,13 @@ import (
 func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	body := c.Body()
 
-	conn, err := d.DB.Connx(c.Context())
-	if err != nil {
-		return err
-	}
-
 	// Check duplicates
 	hash, err := resources.Hash(body)
 	if err != nil {
 		return err
 	}
 
-	dup, i, err := d.PasteController.ReadHashFromDB(conn, hash)
+	dup, i, err := d.PasteController.ReadHashFromDB(c.Context(), hash)
 	if err != nil {
 		return err
 	}
@@ -39,32 +34,23 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + i.ID))
 	}
 
-	conn, err = d.DB.Connx(c.Context())
-	if err != nil {
-		return err
-	}
-
 	paste := models.Item{
 		Paste: body,
 		Hash:  hash,
 		IP:    c.IP(),
 		User:  c.Locals("user").(string),
 	}
-	data, err := d.PasteController.InsertPasteToDB(conn, paste)
+	data, err := d.PasteController.InsertPasteToDB(c.Context(), paste)
 	if err != nil {
 		return err
 	}
 
-	err = d.PasteController.InsertPasteToCache(data)
+	err = d.PasteController.InsertPasteToCache(c.Context(), data)
 	if err != nil {
 		return err
 	}
 
-	conn, err = d.DB.Connx(c.Context())
-	if err != nil {
-		return err
-	}
-	defer d.updateCachedID(conn, data.ID)
+	defer d.updateCachedID(data.ID)
 
 	c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
 	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + data.ID))
@@ -73,14 +59,15 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 // A private function to run without wanting to wait.
 // This will return behind the scene once, preferably without
 // the use of goroutine.
-func (d *Dependency) updateCachedID(conn *sqlx.Conn, id string) error {
+func (d *Dependency) updateCachedID(id string) error {
+
 	ids, err := d.PasteController.ReadIDFromMemory()
 	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
 		return err
 	}
 
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
-		pastes, err := d.PasteController.ReadIDFromDB(conn)
+		pastes, err := d.PasteController.ReadIDFromDB(context.Background())
 		if err != nil {
 			return err
 		}

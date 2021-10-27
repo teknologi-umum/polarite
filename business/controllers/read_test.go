@@ -17,11 +17,12 @@ func TestReadItemFromCache(t *testing.T) {
 	}
 
 	p := controllers.PasteControllerImpl{
+		DB:     db,
 		Cache:  rds,
 		Memory: mem,
 	}
 
-	i, err := p.ReadItemFromCache("testid")
+	i, err := p.ReadItemFromCache(context.Background(), "testid")
 	if err != nil {
 		t.Error(err)
 	}
@@ -69,17 +70,13 @@ func TestReadItemFromDB(t *testing.T) {
 	}
 	defer r.Close()
 
-	c, err = db.Connx(context.Background())
-	if err != nil {
-		t.Error(err)
-	}
-
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
-	i, err := p.ReadItemFromDB(c, paste.ID)
+	i, err := p.ReadItemFromDB(context.Background(), paste.ID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -120,17 +117,13 @@ func TestReadIDFromDB(t *testing.T) {
 	}
 	defer r.Close()
 
-	c, err = db.Connx(context.Background())
-	if err != nil {
-		t.Error(err)
-	}
-
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
-	i, err := p.ReadIDFromDB(c)
+	i, err := p.ReadIDFromDB(context.Background())
 	if err != nil {
 		t.Error(err)
 	}
@@ -155,6 +148,7 @@ func TestReadIDFromMemory(t *testing.T) {
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
 	i, err := p.ReadIDFromMemory()
@@ -198,18 +192,13 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 	}
 	defer r.Close()
 
-	c, err = db.Connx(context.Background())
-	if err != nil {
-		t.Error(err)
-	}
-	defer c.Close()
-
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
-	b, i, err := p.ReadHashFromDB(c, paste.Hash)
+	b, i, err := p.ReadHashFromDB(context.Background(), paste.Hash)
 	if err != nil {
 		t.Error(err)
 	}
@@ -226,18 +215,13 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 func TestReadHashFromDB_NoDup(t *testing.T) {
 	defer TruncateTable(db, rds, mem)
 
-	c, err := db.Connx(context.Background())
-	if err != nil {
-		t.Error(err)
-	}
-	defer c.Close()
-
 	p := controllers.PasteControllerImpl{
 		Cache:  rds,
 		Memory: mem,
+		DB:     db,
 	}
 
-	b, _, err := p.ReadHashFromDB(c, "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4")
+	b, _, err := p.ReadHashFromDB(context.Background(), "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4")
 	if err != nil {
 		t.Error(err)
 	}
