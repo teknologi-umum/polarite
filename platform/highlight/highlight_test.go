@@ -13,7 +13,7 @@ func TestHighlight(t *testing.T) {
 			Console.WriteLine("sup world");
 		};
 	};`
-	
+
 	_, err := highlight.Highlight(code, "c#", "nord", "true")
 	if err != nil {
 		t.Error("an error was thrown:", err)

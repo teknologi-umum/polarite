@@ -60,7 +60,6 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 // This will return behind the scene once, preferably without
 // the use of goroutine.
 func (d *Dependency) updateCachedID(id string) error {
-
 	ids, err := d.PasteController.ReadIDFromMemory()
 	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
 		return err
