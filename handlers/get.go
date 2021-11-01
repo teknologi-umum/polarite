@@ -35,12 +35,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	}
 
 	if errors.Is(err, bigcache.ErrEntryNotFound) {
-		conn, err := d.DB.Connx(c.Context())
-		if err != nil {
-			return err
-		}
-
-		pastes, err := d.PasteController.ReadIDFromDB(conn)
+		pastes, err := d.PasteController.ReadIDFromDB(c.Context())
 		if err != nil {
 			return err
 		}
@@ -57,24 +52,19 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	}
 
 	// Try to fetch from Redis first
-	i, err := d.PasteController.ReadItemFromCache(id)
+	i, err := d.PasteController.ReadItemFromCache(c.Context(), id)
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return err
 	}
 
 	// Item not found on Redis, now try to fetch from DB
 	if errors.Is(err, redis.Nil) {
-		conn, err := d.DB.Connx(c.Context())
+		i, err = d.PasteController.ReadItemFromDB(c.Context(), id)
 		if err != nil {
 			return err
 		}
 
-		i, err = d.PasteController.ReadItemFromDB(conn, id)
-		if err != nil {
-			return err
-		}
-
-		err = d.PasteController.InsertPasteToCache(i)
+		err = d.PasteController.InsertPasteToCache(c.Context(), i)
 		if err != nil {
 			return err
 		}

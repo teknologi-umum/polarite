@@ -6,7 +6,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Migrate(conn *sqlx.Conn) error {
+func Migrate(db *sqlx.DB) error {
+	conn, err := db.Connx(context.Background())
+	if err != nil {
+		return err
+	}
 	defer conn.Close()
 
 	r, err := conn.QueryContext(
