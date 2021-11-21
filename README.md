@@ -96,11 +96,61 @@ If none of these options are passed, you will get a plain text without any highl
 
 - `theme`
 
-    This option decides which theme to use. See [alecthomas/chroma/styles](https://github.com/alecthomas/chroma/tree/master/styles) for supported themes.
-    The default theme is dracula.
+    This option decides which theme to use. The default theme is dracula.
 
     - `https://polarite.teknologiumum.com/your-unique-id?theme=monokai`
     - `https://polarite.teknologiumum.com/your-unique-id?theme=nord`
+
+    <details>
+        <summary>Click here to see all valid themes</summary>
+
+     - abap
+     - algol
+     - algol_nu
+     - arduino
+     - autumn
+     - base16-snazzy
+     - bw
+     - borland
+     - colorful
+     - doom-one
+     - doom-one2
+     - dracula
+     - emacs
+     - friendly
+     - fruity
+     - github
+     - hrdark
+     - hr_high_contrast
+     - igor
+     - lovelace
+     - manni
+     - monokai
+     - monokailight
+     - murphy
+     - native
+     - nord
+     - onesenterprise
+     - paraiso-dark
+     - paraiso-light
+     - pastie
+     - perldoc
+     - pygments
+     - rainbow_dash
+     - rrt
+     - solarized-dark
+     - soldarized-dark256
+     - solarized-light
+     - swapoff
+     - tango
+     - trac
+     - vim
+     - vs
+     - vulcan
+     - xcode
+     - xcode-dark
+    </details>
+
 
 - `linenr`
 
