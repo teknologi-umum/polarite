@@ -81,6 +81,37 @@ var request = new HttpRequestMessage() {
 var task = await client.SendAsync(request);
 ```
 
+### Available Options
+
+Polarite uses [alecthomas/chroma](github.com/alecthomas/chroma). You can pass
+some options to the highlighter by appending these parameters in the URL.
+If none of these options are passed, you will get a plain text without any highlighting
+
+- `lang`
+
+    This option decides which language to use. See [alecthomas/chroma#supported-languages](https://github.com/alecthomas/chroma/#supported-languages) for supported languages.
+
+    - `https://polarite.teknologiumum.com/your-unique-id?lang=go`
+    - `https://polarite.teknologiumum.com/your-unique-id?lang=rust`
+
+- `theme`
+
+    This option decides which theme to use. See [alecthomas/chroma/styles](https://github.com/alecthomas/chroma/tree/master/styles) for supported themes.
+    The default theme is dracula.
+
+    - `https://polarite.teknologiumum.com/your-unique-id?theme=monokai`
+    - `https://polarite.teknologiumum.com/your-unique-id?theme=nord`
+
+- `linenr`
+
+    This option decides whether to enable line number or not. A non empty value is considered as true.
+
+    - `https://polarite.teknologiumum.com/your-unique-id?linenr=yes`
+    - `https://polarite.teknologiumum.com/your-unique-id?linenr=true` This is also valid
+
+You can, of course, combine the options.
+For example: `https://polarite.teknologiumum.com/your-unique-id?lang=rust&theme=nord&linenr=true`
+
 ## Why the name, Polarite?
 
 In the dawn of time, it began with the birth of [Graphene](https://github.com/teknologi-umum/graphene) repository, which its' name was picked from the name of a mineral.
