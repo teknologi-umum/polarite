@@ -34,10 +34,10 @@ func Highlight(source, lang, theme, linenr string) (string, error) {
 		return source, err
 	}
 
-	opts := []html.Option{html.Standalone(true)}
+	opts := []html.Option{html.Standalone(false)}
 
 	if linenr != "" {
-		opts = append(opts, html.WithLineNumbers(true))
+		opts = append(opts, html.WithLineNumbers(true), html.LinkableLineNumbers(true, "l"))
 	}
 
 	var buf bytes.Buffer

@@ -82,13 +82,18 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		}
 
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-		return c.Status(http.StatusOK).Send([]byte(highlighted))
+		return c.Render("template", fiber.Map{
+			"Content":     "",
+			"Highlighted": highlighted,
+			"Truncated":   resources.TruncateString(content, 50),
+		})
 	}
 
 	if strings.Contains(c.Get(fiber.HeaderAccept), fiber.MIMETextHTML) {
 		return c.Render("template", fiber.Map{
-			"Content":   content,
-			"Truncated": resources.TruncateString(content, 50),
+			"Content":     content,
+			"Highlighted": "",
+			"Truncated":   resources.TruncateString(content, 50),
 		})
 	}
 

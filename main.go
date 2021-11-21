@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"os"
 	"os/signal"
@@ -26,10 +27,17 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/template/html"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
+	viewEngine := html.New("./views", ".html")
+	viewEngine.AddFunc(
+		// add unescape function
+		"unescape", func(s string) template.HTML {
+			return template.HTML(s)
+		},
+	)
+
 	app := fiber.New(fiber.Config{
 		AppName:                 "Teknologi Umum - Polarite",
 		CaseSensitive:           true,
@@ -39,7 +47,7 @@ func main() {
 		BodyLimit:               1024 * 1024 * 6,
 		WriteTimeout:            30 * time.Second,
 		ReadTimeout:             30 * time.Second,
-		Views:                   html.New("./views", ".html"),
+		Views:                   viewEngine,
 	})
 
 	// Setup MySQL/Planetscale
@@ -102,8 +110,8 @@ func main() {
 		MaxAge:       60 * 60 * 24,
 	}))
 
-	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.HomePage)
-	app.Get("/:id", corsMiddleware, cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: true}), r.Get)
+	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: false}), r.HomePage)
+	app.Get("/:id", corsMiddleware, r.Get)
 	app.Post("/", corsMiddleware, limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
 
 	if os.Getenv("ENVIRONMENT") == "development" {

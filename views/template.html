@@ -71,22 +71,22 @@
       body {
         width: 100%;
         height: 100%;
-        margin: 0.5rem;
       }
       pre {
           white-space: pre-wrap;
           word-wrap: break-word;
-          font-size: 0.75rem;
+          padding: 0.75rem;
+          font-size: 0.85rem;
           font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
       }
       @media (prefers-color-scheme: dark) {
-        body {
+        .normal {
           background-color: rgb(28,27,34);
           color: rgb(251,251,254);
         }
       }
       @media (prefers-color-scheme: light) {
-        body {
+        .normal {
           background-color: rgb(251,251,254);
           color: rgb(28,27,34);
         }
@@ -94,6 +94,7 @@
     </style>
   </head>
   <body>
-    <pre>{{.Content}}</pre>
+    {{unescape .Highlighted}}
+    <pre class="normal">{{.Content}}</pre>
   </body>
 </html>
