@@ -1,54 +1,61 @@
 // Insert a data to the database
 
-package controllers
+package paste
 
 import (
 	"context"
-	"polarite/business/models"
+	"database/sql"
 	"polarite/resources"
 	"time"
 
 	"github.com/aidarkhanov/nanoid/v2"
 )
 
-func (c *PasteControllerImpl) InsertPasteToDB(ctx context.Context, paste models.Item) (models.Item, error) {
+func (c *Dependency) InsertPasteToDB(ctx context.Context, paste Item) (Item, error) {
 	conn, err := c.DB.Connx(ctx)
 	if err != nil {
-		return models.Item{}, err
+		return Item{}, err
 	}
 	defer conn.Close()
 
 	id, err := nanoid.New()
 	if err != nil {
-		return models.Item{}, err
+		return Item{}, err
 	}
 
 	p, err := resources.CompressContent(paste.Paste)
 	if err != nil {
-		return models.Item{}, err
+		return Item{}, err
 	}
 
-	r, err := conn.QueryContext(
+	tx, err := conn.BeginTxx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return Item{}, err
+	}
+
+	_, err = tx.ExecContext(
 		ctx,
 		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
 		id, p, paste.Hash, paste.IP, paste.User)
 	if err != nil {
-		return models.Item{}, err
+		tx.Rollback()
+		return Item{}, err
 	}
-	defer r.Close()
 
+	err = tx.Commit()
 	if err != nil {
-		return models.Item{}, err
+		tx.Rollback()
+		return Item{}, err
 	}
 
-	return models.Item{
+	return Item{
 		ID:        id,
 		Paste:     paste.Paste,
 		CreatedAt: time.Now(),
 	}, nil
 }
 
-func (c *PasteControllerImpl) InsertPasteToCache(ctx context.Context, paste models.Item) error {
+func (c *Dependency) InsertPasteToCache(ctx context.Context, paste Item) error {
 	_, err := c.Cache.SetEX(ctx, "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
 	if err != nil {
 		return err

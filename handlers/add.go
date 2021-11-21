@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"polarite/business/models"
+	"polarite/packages/paste"
 	"polarite/repository"
 	"polarite/resources"
 
@@ -34,13 +34,13 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + i.ID))
 	}
 
-	paste := models.Item{
+	item := paste.Item{
 		Paste: body,
 		Hash:  hash,
 		IP:    c.IP(),
 		User:  c.Locals("user").(string),
 	}
-	data, err := d.PasteController.InsertPasteToDB(c.Context(), paste)
+	data, err := d.PasteController.InsertPasteToDB(c.Context(), item)
 	if err != nil {
 		return err
 	}

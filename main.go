@@ -7,8 +7,8 @@ import (
 	"os/signal"
 
 	"net/http"
-	"polarite/business/controllers"
 	"polarite/handlers"
+	"polarite/packages/paste"
 	"polarite/resources"
 	"strings"
 	"time"
@@ -30,26 +30,6 @@ import (
 )
 
 func main() {
-	viewEngine := html.New("./views", ".html")
-	viewEngine.AddFunc(
-		// add unescape function
-		"unescape", func(s string) template.HTML {
-			return template.HTML(s)
-		},
-	)
-
-	app := fiber.New(fiber.Config{
-		AppName:                 "Teknologi Umum - Polarite",
-		CaseSensitive:           true,
-		StrictRouting:           false,
-		ErrorHandler:            handlers.ErrorHandler,
-		EnableTrustedProxyCheck: true,
-		BodyLimit:               1024 * 1024 * 6,
-		WriteTimeout:            30 * time.Second,
-		ReadTimeout:             30 * time.Second,
-		Views:                   viewEngine,
-	})
-
 	// Setup MySQL/Planetscale
 	dbURL, err := resources.ParseURL(os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -79,18 +59,41 @@ func main() {
 	defer mem.Close()
 
 	// Setup Sentry
-	err = sentry.Init(sentry.ClientOptions{
-		Dsn: os.Getenv("SENTRY_DSN"),
+	logger, err := sentry.NewClient(sentry.ClientOptions{
+		Dsn:              os.Getenv("SENTRY_DSN"),
+		Debug:            true,
+		AttachStacktrace: true,
 	})
 	if err != nil {
 		panic(err)
 	}
 
+	viewEngine := html.New("./views", ".html")
+	viewEngine.AddFunc(
+		// add unescape function
+		"unescape", func(s string) template.HTML {
+			return template.HTML(s)
+		},
+	)
+
+	app := fiber.New(fiber.Config{
+		AppName:                 "Teknologi Umum - Polarite",
+		CaseSensitive:           true,
+		StrictRouting:           false,
+		ErrorHandler:            handlers.ErrorHandler(logger),
+		EnableTrustedProxyCheck: true,
+		BodyLimit:               1024 * 1024 * 6,
+		WriteTimeout:            30 * time.Second,
+		ReadTimeout:             30 * time.Second,
+		Views:                   viewEngine,
+	})
+
 	// Setup Dependency injection struct
-	pasteController := &controllers.PasteControllerImpl{
+	pasteController := &paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
+		Logger: logger,
 	}
 	r := handlers.Dependency{
 		PasteController: pasteController,

@@ -1,11 +1,10 @@
-package controllers
+package paste
 
 import (
-	"polarite/business/models"
 	"strings"
 )
 
-func (c *PasteControllerImpl) UpdateIDListFromDB(pastes []models.Item) ([]string, error) {
+func (c *Dependency) UpdateIDListFromDB(pastes []Item) ([]string, error) {
 	var temp []string
 	for i := 0; i < len(pastes); i++ {
 		temp = append(temp, pastes[i].ID)
@@ -20,7 +19,7 @@ func (c *PasteControllerImpl) UpdateIDListFromDB(pastes []models.Item) ([]string
 	return temp, nil
 }
 
-func (c *PasteControllerImpl) UpdateIDListFromCache(pastes []string, new string) (int, error) {
+func (c *Dependency) UpdateIDListFromCache(pastes []string, new string) (int, error) {
 	pastes = append(pastes, new)
 	s := strings.Join(pastes, ",")
 	err := c.Memory.Set("ids", []byte(s))

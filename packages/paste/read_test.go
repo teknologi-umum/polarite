@@ -1,9 +1,8 @@
-package controllers_test
+package paste_test
 
 import (
 	"context"
-	"polarite/business/controllers"
-	"polarite/business/models"
+	"polarite/packages/paste"
 	"polarite/resources"
 	"testing"
 )
@@ -16,7 +15,7 @@ func TestReadItemFromCache(t *testing.T) {
 		t.Error(err)
 	}
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		DB:     db,
 		Cache:  rds,
 		Memory: mem,
@@ -48,7 +47,7 @@ func TestReadItemFromDB(t *testing.T) {
 		t.Error(err)
 	}
 
-	paste := models.Item{
+	item := paste.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
 		Paste: comp,
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
@@ -59,24 +58,24 @@ func TestReadItemFromDB(t *testing.T) {
 	r, err := c.QueryContext(
 		context.Background(),
 		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
-		paste.ID,
-		paste.Paste,
-		paste.Hash,
-		paste.IP,
-		paste.User,
+		item.ID,
+		item.Paste,
+		item.Hash,
+		item.IP,
+		item.User,
 	)
 	if err != nil {
 		t.Error(err)
 	}
 	defer r.Close()
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
 	}
 
-	i, err := p.ReadItemFromDB(context.Background(), paste.ID)
+	i, err := p.ReadItemFromDB(context.Background(), item.ID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +94,7 @@ func TestReadIDFromDB(t *testing.T) {
 	}
 	defer c.Close()
 
-	paste := models.Item{
+	item := paste.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
 		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
@@ -106,18 +105,18 @@ func TestReadIDFromDB(t *testing.T) {
 	r, err := c.QueryContext(
 		context.Background(),
 		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
-		paste.ID,
-		paste.Paste,
-		paste.Hash,
-		paste.IP,
-		paste.User,
+		item.ID,
+		item.Paste,
+		item.Hash,
+		item.IP,
+		item.User,
 	)
 	if err != nil {
 		t.Error(err)
 	}
 	defer r.Close()
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
@@ -132,8 +131,8 @@ func TestReadIDFromDB(t *testing.T) {
 		t.Error("length of i should be 1, got:", len(i))
 	}
 
-	if i[0].ID != paste.ID {
-		t.Error("i[0].ID should be equal to "+paste.ID+", got:", i[0].ID)
+	if i[0].ID != item.ID {
+		t.Error("i[0].ID should be equal to "+item.ID+", got:", i[0].ID)
 	}
 }
 
@@ -145,7 +144,7 @@ func TestReadIDFromMemory(t *testing.T) {
 		t.Error(err)
 	}
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
@@ -170,7 +169,7 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 	}
 	defer c.Close()
 
-	paste := models.Item{
+	item := paste.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
 		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
@@ -181,24 +180,24 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 	r, err := c.QueryContext(
 		context.Background(),
 		"INSERT INTO paste (id, content, hash, ip, user) VALUES (?, ?, ?, ?, ?)",
-		paste.ID,
-		paste.Paste,
-		paste.Hash,
-		paste.IP,
-		paste.User,
+		item.ID,
+		item.Paste,
+		item.Hash,
+		item.IP,
+		item.User,
 	)
 	if err != nil {
 		t.Error(err)
 	}
 	defer r.Close()
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
 	}
 
-	b, i, err := p.ReadHashFromDB(context.Background(), paste.Hash)
+	b, i, err := p.ReadHashFromDB(context.Background(), item.Hash)
 	if err != nil {
 		t.Error(err)
 	}
@@ -207,15 +206,15 @@ func TestReadHashFromDB_Dup(t *testing.T) {
 		t.Error("b should be true, got:", b)
 	}
 
-	if i.ID != paste.ID {
-		t.Error("i.ID should be equal to "+paste.ID+", got:", i.ID)
+	if i.ID != item.ID {
+		t.Error("i.ID should be equal to "+item.ID+", got:", i.ID)
 	}
 }
 
 func TestReadHashFromDB_NoDup(t *testing.T) {
 	defer TruncateTable(db, rds, mem)
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
