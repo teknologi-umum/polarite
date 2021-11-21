@@ -110,11 +110,13 @@ func (c *Dependency) ReadHashFromDB(ctx context.Context, h string) (bool, Item, 
 	for r.Next() {
 		err = r.StructScan(&item)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return false, Item{}, nil
-			}
 			return false, Item{}, err
 		}
 	}
+
+	if item.ID == "" {
+		return false, Item{}, nil
+	}
+
 	return true, item, nil
 }

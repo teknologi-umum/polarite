@@ -16,7 +16,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/joho/godotenv/autoload"
 
-	sentryfiber "github.com/aldy505/sentry-fiber"
 	"github.com/allegro/bigcache/v3"
 	sentry "github.com/getsentry/sentry-go"
 	"github.com/go-redis/redis/v8"
@@ -104,7 +103,6 @@ func main() {
 		AllowMethods: strings.Join([]string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead}, ","),
 		AllowHeaders: fiber.HeaderAuthorization,
 	})
-	app.Use(sentryfiber.New(sentryfiber.Options{}))
 	app.Use("/assets", filesystem.New(filesystem.Config{
 		Root:         http.Dir("./views/assets"),
 		Browse:       false,
