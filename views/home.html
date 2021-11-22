@@ -70,16 +70,10 @@
       * { padding: 0; margin: 0; box-sizing: border-box; }
       html, body, form, textarea { width: 100%; height: 100%; }
       @media (prefers-color-scheme: dark) {
-        textarea {
-          background-color: rgb(28,27,34);
-          color: rgb(251,251,254);
-        }
+        textarea { background-color: rgb(28,27,34); color: rgb(251,251,254); }
       }
       @media (prefers-color-scheme: light) {
-        textarea {
-          background-color: rgb(251,251,254);
-          color: rgb(28,27,34);
-        }
+        textarea { background-color: rgb(251,251,254); color: rgb(28,27,34); }
       }
       textarea { display: block; padding: 4rem 1rem 1rem 1rem; border: none; outline: none; resize: none; font-size: 0.8rem; font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace; }
       button { position: absolute; left: 1rem; top: 1rem; height: 2rem; width: 4rem; cursor: pointer; font-size: 0.8rem; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; }
@@ -87,24 +81,50 @@
   </head>
   <body>
     <textarea id="textarea" placeholder="Start typing..."></textarea>
-    <button onclick="submit()" role="submit" tabindex="-1">SAVE</button>
+    <button id="submit-btn" onclick="submit()" role="submit" tabindex="-1">SAVE</button>
 
     <script>
-      function submit() {
-        const text = document.getElementById("textarea").value;
+      const button = document.getElementById("submit-btn");
+      const body = document.body
+      const textarea = document.getElementById("textarea");
 
-        fetch("/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain",
-            Accept: "text/plain",
-            Authorization: "Polarite Web Client <polarite@teknologiumum.com>"
-          },
-          body: text,
-        })
-          .then((resp) => resp.text())
-          .then((url) => (window.location.href = url))
-          .catch((err) => console.error(err));
+      function submit() {
+        button.disabled = true;
+        body.style.filter = "brightness(0.8) contrast(0.8)"
+        textarea.style.cursor = "wait"
+        button.style.cursor = "not-allowed"
+        const text = textarea.value;
+
+        const MAX_ATTEMPT = 3;
+        let currentAttempt = 0;
+        const makeRequest = () => {
+          fetch("/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain",
+              Accept: "text/plain",
+              Authorization: "Polarite Web Client <polarite@teknologiumum.com>"
+            },
+            body: text,
+          })
+            .then((resp) => resp.text())
+            .then((url) => (window.location.href = url))
+            .catch((err) => {
+              if (currentAttempt < MAX_ATTEMPT) {
+                currentAttempt++;
+                makeRequest()
+                return;
+              }
+
+              button.disabled = false;
+              body.style.filter = "brightness(1) contrast(1)"
+              textarea.style.cursor = "auto"
+              button.style.cursor = "auto"
+              console.error(err);
+            });
+        }
+
+        makeRequest()
       }
     </script>
   </body>
