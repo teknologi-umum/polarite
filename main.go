@@ -7,8 +7,8 @@ import (
 	"os/signal"
 
 	"net/http"
-	"polarite/business/controllers"
 	"polarite/handlers"
+	"polarite/packages/paste"
 	"polarite/resources"
 	"strings"
 	"time"
@@ -16,7 +16,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/joho/godotenv/autoload"
 
-	sentryfiber "github.com/aldy505/sentry-fiber"
 	"github.com/allegro/bigcache/v3"
 	sentry "github.com/getsentry/sentry-go"
 	"github.com/go-redis/redis/v8"
@@ -30,26 +29,6 @@ import (
 )
 
 func main() {
-	viewEngine := html.New("./views", ".html")
-	viewEngine.AddFunc(
-		// add unescape function
-		"unescape", func(s string) template.HTML {
-			return template.HTML(s)
-		},
-	)
-
-	app := fiber.New(fiber.Config{
-		AppName:                 "Teknologi Umum - Polarite",
-		CaseSensitive:           true,
-		StrictRouting:           false,
-		ErrorHandler:            handlers.ErrorHandler,
-		EnableTrustedProxyCheck: true,
-		BodyLimit:               1024 * 1024 * 6,
-		WriteTimeout:            30 * time.Second,
-		ReadTimeout:             30 * time.Second,
-		Views:                   viewEngine,
-	})
-
 	// Setup MySQL/Planetscale
 	dbURL, err := resources.ParseURL(os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -79,18 +58,41 @@ func main() {
 	defer mem.Close()
 
 	// Setup Sentry
-	err = sentry.Init(sentry.ClientOptions{
-		Dsn: os.Getenv("SENTRY_DSN"),
+	logger, err := sentry.NewClient(sentry.ClientOptions{
+		Dsn:              os.Getenv("SENTRY_DSN"),
+		Debug:            true,
+		AttachStacktrace: true,
 	})
 	if err != nil {
 		panic(err)
 	}
 
+	viewEngine := html.New("./views", ".html")
+	viewEngine.AddFunc(
+		// add unescape function
+		"unescape", func(s string) template.HTML {
+			return template.HTML(s)
+		},
+	)
+
+	app := fiber.New(fiber.Config{
+		AppName:                 "Teknologi Umum - Polarite",
+		CaseSensitive:           true,
+		StrictRouting:           false,
+		ErrorHandler:            handlers.ErrorHandler(logger),
+		EnableTrustedProxyCheck: true,
+		BodyLimit:               1024 * 1024 * 6,
+		WriteTimeout:            30 * time.Second,
+		ReadTimeout:             30 * time.Second,
+		Views:                   viewEngine,
+	})
+
 	// Setup Dependency injection struct
-	pasteController := &controllers.PasteControllerImpl{
+	pasteController := &paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
+		Logger: logger,
 	}
 	r := handlers.Dependency{
 		PasteController: pasteController,
@@ -101,7 +103,6 @@ func main() {
 		AllowMethods: strings.Join([]string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead}, ","),
 		AllowHeaders: fiber.HeaderAuthorization,
 	})
-	app.Use(sentryfiber.New(sentryfiber.Options{}))
 	app.Use("/assets", filesystem.New(filesystem.Config{
 		Root:         http.Dir("./views/assets"),
 		Browse:       false,

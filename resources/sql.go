@@ -15,18 +15,20 @@ func ParseURL(connstr string) (out string, err error) {
 			return out, err
 		}
 
-		out += parsedConn.User.String()
-		out += "@"
-		out += "tcp("
-		out += parsedConn.Hostname()
-		out += ":"
-		out += parsedConn.Port()
-		out += ")"
-		out += parsedConn.EscapedPath()
-		out += "?"
-		out += parsedConn.Query().Encode()
+		var out strings.Builder
 
-		return out, err
+		out.WriteString(parsedConn.User.String())
+		out.WriteString("@")
+		out.WriteString("tcp(")
+		out.WriteString(parsedConn.Hostname())
+		out.WriteString(":")
+		out.WriteString(parsedConn.Port())
+		out.WriteString(")")
+		out.WriteString(parsedConn.EscapedPath())
+		out.WriteString("?")
+		out.WriteString(parsedConn.Query().Encode())
+
+		return out.String(), err
 	} else if strings.HasPrefix(connstr, "postgres://") || strings.HasPrefix(connstr, "postgresql://") {
 		// PostgreSQL DSN format is: user=bob password=secret host=1.2.3.4 port=5432 dbname=mydb sslmode=verify-full
 		parsedConn, err := url.Parse(connstr)
@@ -36,20 +38,22 @@ func ParseURL(connstr string) (out string, err error) {
 
 		pwd, _ := parsedConn.User.Password()
 
-		out += "user="
-		out += parsedConn.User.Username()
-		out += " password="
-		out += pwd
-		out += " host="
-		out += parsedConn.Hostname()
-		out += " port="
-		out += parsedConn.Port()
-		out += " dbname="
-		out += strings.Replace(parsedConn.EscapedPath(), "/", "", 1)
-		out += " "
-		out += strings.Join(strings.Split(parsedConn.Query().Encode(), "&"), " ")
+		var out strings.Builder
 
-		return out, err
+		out.WriteString("user=")
+		out.WriteString(parsedConn.User.Username())
+		out.WriteString(" password=")
+		out.WriteString(pwd)
+		out.WriteString(" host=")
+		out.WriteString(parsedConn.Hostname())
+		out.WriteString(" port=")
+		out.WriteString(parsedConn.Port())
+		out.WriteString(" dbname=")
+		out.WriteString(strings.Replace(parsedConn.EscapedPath(), "/", "", 1))
+		out.WriteString(" ")
+		out.WriteString(strings.Join(strings.Split(parsedConn.Query().Encode(), "&"), " "))
+
+		return out.String(), err
 	}
 
 	return connstr, nil

@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	"polarite/business/models"
+	"polarite/packages/paste"
 	h "polarite/platform/highlight"
 	"polarite/repository"
 	"polarite/resources"
@@ -22,7 +22,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).Send([]byte(repository.ErrNoID.Error()))
 	}
 
-	var qs models.QueryString
+	var qs paste.QueryString
 	err := c.QueryParser(&qs)
 	if err != nil {
 		return err

@@ -1,8 +1,7 @@
-package controllers_test
+package paste_test
 
 import (
-	"polarite/business/controllers"
-	"polarite/business/models"
+	"polarite/packages/paste"
 	"strings"
 	"testing"
 )
@@ -10,7 +9,7 @@ import (
 func TestUpdateIDListFromDB(t *testing.T) {
 	defer TruncateTable(db, rds, mem)
 
-	paste := []models.Item{
+	item := []paste.Item{
 		{
 			ID:    "wNnwj138ne9ZaWmNADwIg",
 			Paste: []byte("Hello world!"),
@@ -27,13 +26,13 @@ func TestUpdateIDListFromDB(t *testing.T) {
 		},
 	}
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
 	}
 
-	i, err := p.UpdateIDListFromDB(paste)
+	i, err := p.UpdateIDListFromDB(item)
 	if err != nil {
 		t.Error(err)
 	}
@@ -59,7 +58,7 @@ func TestUpdateIDListFromDB(t *testing.T) {
 func TestUpdateIDListFromCache(t *testing.T) {
 	defer TruncateTable(db, rds, mem)
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,

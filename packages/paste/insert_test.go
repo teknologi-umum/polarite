@@ -1,22 +1,21 @@
-package controllers_test
+package paste_test
 
 import (
 	"context"
-	"polarite/business/controllers"
-	"polarite/business/models"
+	"polarite/packages/paste"
 	"testing"
 )
 
 func TestInsertPasteToDB(t *testing.T) {
 	defer TruncateTable(db, rds, mem)
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
 	}
 
-	paste := models.Item{
+	paste := paste.Item{
 		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
 		IP:    "127.0.0.1",
@@ -36,13 +35,13 @@ func TestInsertPasteToDB(t *testing.T) {
 func TestInsertPasteToCache(t *testing.T) {
 	defer TruncateTable(db, rds, mem)
 
-	p := controllers.PasteControllerImpl{
+	p := paste.Dependency{
 		Cache:  rds,
 		Memory: mem,
 		DB:     db,
 	}
 
-	paste := models.Item{
+	paste := paste.Item{
 		ID:    "wNnwj138ne9ZaWmNADwIg",
 		Paste: []byte("Hello world!"),
 		Hash:  "7e81ebe9e604a0c97fef0e4cfe71f9ba0ecba13332bde953ad1c66e4",
