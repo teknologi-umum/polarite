@@ -2,6 +2,7 @@ package paste
 
 import (
 	"context"
+	"errors"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/getsentry/sentry-go"
@@ -27,3 +28,5 @@ type PasteController interface {
 	UpdateIDListFromDB(pastes []Item) ([]string, error)
 	UpdateIDListFromCache(pastes []string, new string) (int, error)
 }
+
+var ErrIDDuplicate = errors.New("generated id is duplicated, please try again")

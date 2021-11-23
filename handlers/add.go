@@ -8,6 +8,7 @@ import (
 	"polarite/repository"
 	"polarite/resources"
 
+	"github.com/aidarkhanov/nanoid/v2"
 	"github.com/allegro/bigcache/v3"
 	"github.com/gofiber/fiber/v2"
 )
@@ -34,7 +35,13 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + i.ID))
 	}
 
+	id, err := nanoid.GenerateString(nanoid.DefaultAlphabet, 6)
+	if err != nil {
+		return err
+	}
+
 	item := paste.Item{
+		ID:    id,
 		Paste: body,
 		Hash:  hash,
 		IP:    c.IP(),
