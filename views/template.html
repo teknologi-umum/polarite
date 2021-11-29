@@ -68,11 +68,12 @@
     <meta http-equiv="Page-Exit" content="RevealTrans(Duration=1.0,Transition=1)" />
     <style>
       * { padding: 0; margin: 0; box-sizing: border-box; }
-      html, body, pre {
+      html, body {
         width: 100%;
-        min-height: 100%;
+        height: 100%;
       }
       pre {
+          min-height: 100%;
           white-space: pre-wrap;
           word-wrap: break-word;
           padding: 0.75rem;
@@ -94,7 +95,10 @@
     </style>
   </head>
   <body>
-    {{unescape .Highlighted}}
-    <pre class="normal">{{.Content}}</pre>
+    {{ if (ne .Highlighted "") }}
+      {{unescape .Highlighted}}
+    {{ else }}
+      <pre class="normal">{{.Content}}</pre>
+    {{ end }}
   </body>
 </html>
