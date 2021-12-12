@@ -24,6 +24,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/helmet/v2"
 	"github.com/gofiber/template/html"
 	"github.com/jmoiron/sqlx"
 )
@@ -103,6 +104,17 @@ func main() {
 		AllowMethods: strings.Join([]string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead}, ","),
 		AllowHeaders: fiber.HeaderAuthorization,
 	})
+
+	app.Use(helmet.New(helmet.Config{
+		XSSProtection:         "1; mode=block",
+		ContentTypeNosniff:    "nosniff",
+		XFrameOptions:         "SAMEORIGIN",
+		HSTSPreloadEnabled:    true,
+		HSTSMaxAge:            63072000,
+		HSTSExcludeSubdomains: false,
+		ReferrerPolicy:        "strict-origin-when-cross-origin",
+	}))
+
 	app.Use("/assets", filesystem.New(filesystem.Config{
 		Root:         http.Dir("./views/assets"),
 		Browse:       false,
@@ -111,9 +123,9 @@ func main() {
 		MaxAge:       60 * 60 * 24,
 	}))
 
-	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: false}), r.HomePage)
-	app.Get("/:id", corsMiddleware, r.Get)
-	app.Post("/", corsMiddleware, limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
+	app.Get("/", handlers.GoSecure, cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: false}), r.HomePage)
+	app.Get("/:id", corsMiddleware, handlers.GoSecure, r.Get)
+	app.Post("/", corsMiddleware, handlers.GoSecure, limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
 
 	if os.Getenv("ENVIRONMENT") == "development" {
 		startServer(app)
