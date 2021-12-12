@@ -123,9 +123,9 @@ func main() {
 		MaxAge:       60 * 60 * 24,
 	}))
 
-	app.Get("/", handlers.GoSecure, cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: false}), r.HomePage)
-	app.Get("/:id", corsMiddleware, handlers.GoSecure, r.Get)
-	app.Post("/", corsMiddleware, handlers.GoSecure, limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
+	app.Get("/", cache.New(cache.Config{Expiration: 1 * time.Hour, CacheControl: false}), r.HomePage)
+	app.Get("/:id", corsMiddleware, r.Get)
+	app.Post("/", corsMiddleware, limiter.New(limiter.Config{Max: 5, Expiration: 1 * time.Minute}), handlers.ValidateInput, r.AddPaste)
 
 	if os.Getenv("ENVIRONMENT") == "development" {
 		startServer(app)
