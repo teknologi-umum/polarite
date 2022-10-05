@@ -4,9 +4,12 @@ ENV ENVIRONMENT=production
 
 WORKDIR /usr/app
 
-COPY . .
+COPY go.mod ./
+COPY go.sum ./
 
 RUN go mod download
+
+COPY . .
 
 RUN go build .
 
