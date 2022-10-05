@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func (c *Dependency) ReadItemFromCache(ctx context.Context, id string) (Item, error) {
-	r, err := c.Cache.Get(ctx, "paste:"+id).Result()
+func (d *Dependency) ReadItemFromCache(ctx context.Context, id string) (Item, error) {
+	r, err := d.Cache.Get(ctx, "paste:"+id).Result()
 	if err != nil {
 		return Item{}, err
 	}
