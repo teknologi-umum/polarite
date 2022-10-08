@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func (c *Dependency) InsertPasteToDB(ctx context.Context, paste Item) (Item, error) {
-	conn, err := c.DB.Connx(ctx)
+func (d *Dependency) InsertPasteToDB(ctx context.Context, paste Item) (Item, error) {
+	conn, err := d.DB.Connx(ctx)
 	if err != nil {
 		return Item{}, err
 	}
@@ -65,8 +65,8 @@ func (c *Dependency) InsertPasteToDB(ctx context.Context, paste Item) (Item, err
 	}, nil
 }
 
-func (c *Dependency) InsertPasteToCache(ctx context.Context, paste Item) error {
-	_, err := c.Cache.SetEX(ctx, "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
+func (d *Dependency) InsertPasteToCache(ctx context.Context, paste Item) error {
+	_, err := d.Cache.SetEX(ctx, "paste:"+paste.ID, paste.Paste, time.Hour*24*2).Result()
 	if err != nil {
 		return err
 	}
