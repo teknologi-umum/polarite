@@ -34,8 +34,6 @@ func (d *Dependency) InsertPaste(ctx context.Context, paste Item) (Item, error) 
 
 		if err == nil && existingItemId != nil {
 			// Key already found
-			existingItem.Hash = paste.Hash
-
 			err := existingItemId.Value(func(val []byte) error {
 				existingItem.ID = string(val)
 				return nil
