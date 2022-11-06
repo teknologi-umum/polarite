@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 )
 
-// Returns a hashed SHA224 string from the given string.
+// Returns a hashed SHA256 string from the given string.
 func Hash(b []byte) (string, error) {
-	h := sha256.New224()
+	h := sha256.New()
 	_, err := h.Write(b)
 	if err != nil {
 		return "", err

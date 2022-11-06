@@ -5,30 +5,29 @@ on:
     branches:
       - master
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    container: golang:1.17.2
-    services:
-      db:
-        image: mysql:8.0.26
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_DATABASE: polarite
-          MYSQL_ROOT_PASSWORD: password
-      cache:
-        image: redis:6.2.6-alpine
-        ports:
-          - 6379:6379
+    timeout-minutes: 15
+    container: golang:1.19-bullseye
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Installling dependencies
-        run: go mod vendor
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
 
       - name: Build
         run: go build .
@@ -38,8 +37,6 @@ jobs:
         env:
           ENVIRONMENT: development
           PORT: 3000
-          DATABASE_URL: mysql://root:password@db:3306/polarite
-          REDIS_URL: redis://@cache:6379
           TZ: UTC
 
       - name: Initialize CodeQL
@@ -50,21 +47,54 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
   cd:
     name: CD
     needs: ci
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    container: debian:bullseye
+    timeout-minutes: 120
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Install required packages
+        run: apt-get update && apt-get upgrade -y && apt-get install -y tar gzip curl ssh
 
-      - uses: superfly/flyctl-actions@master
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Register SSH key
+        uses: shimataro/ssh-key-action@v2
         with:
-          args: "deploy"
+          key: ${{ secrets.SSH_KEY }}
+          name: id_ed25519
+          known_hosts: ${{ secrets.SSH_IP }}
+          if_key_exists: replace
+
+      - name: SSH Keyscan
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_IP }} >> /root/.ssh/known_hosts
+
+      - name: Pull latest code
+        run: >
+          ssh
+          -i /root/.ssh/id_ed25519 
+          -p ${{ secrets.SSH_PORT }}
+          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }} 
+          'ssh polarite "cd ${{ secrets.SSH_WORKDIR }}/polarite && git pull" '
+
+      - name: Build Docker images
+        run: >
+          ssh 
+          -i /root/.ssh/id_ed25519
+          -p ${{ secrets.SSH_PORT }}
+          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}
+          "ssh polarite 'echo ${{ secrets.SSH_PASSWORD }} | sudo -S bash -c '\"'cd ${{ secrets.SSH_WORKDIR }}/polarite &&
+          docker compose up -d --build'\"' ' "
+
+      - name: Clean up docker artifacts
+        run: >
+          ssh 
+          -i /root/.ssh/id_ed25519
+          -p ${{ secrets.SSH_PORT }}
+          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}
+          "ssh polarite 'echo ${{ secrets.SSH_PASSWORD }} | sudo -S bash -c '\"'docker container prune -f &&
+          docker image prune -f &&
+          docker builder prune -f '\"' ' "
 
       - name: Create Sentry release
         uses: getsentry/action-release@v1
@@ -76,40 +106,43 @@ jobs:
           environment: production
           set_commits: skip
           version: ${{ github.sha }}
+
   release:
     name: Release
     needs: cd
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Log in to the Container registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=nightly
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
             latest=false
+          tags: |
+            type=edge
+            type=sha
           labels: |
             org.opencontainers.image.title=Polarite
             org.opencontainers.image.description=Polarite is a Pastebin alternative made for simplicity written in Go.
             org.opencontainers.image.authors=Teknologi Umum
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           push: true

@@ -1,34 +1,27 @@
-name: Check
+name: PR
 
 on:
   pull_request:
-    branches:
-      - "*"
 
 jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    container: golang:1.17.2
-    services:
-      db:
-        image: mysql:8.0.26
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_DATABASE: polarite
-          MYSQL_ROOT_PASSWORD: password
-      cache:
-        image: redis:6.2.6-alpine
-        ports:
-          - 6379:6379
+    container: golang:1.19
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Installling dependencies
-        run: go mod vendor
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
 
       - name: Build
         run: go build .
@@ -50,4 +43,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3

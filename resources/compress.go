@@ -3,7 +3,7 @@ package resources
 import (
 	"bytes"
 	"compress/zlib"
-	"io/ioutil"
+	"io"
 )
 
 func CompressContent(b []byte) ([]byte, error) {
@@ -27,7 +27,7 @@ func DecompressContent(b []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	res, err := ioutil.ReadAll(r)
+	res, err := io.ReadAll(r)
 	if err != nil {
 		return []byte{}, err
 	}

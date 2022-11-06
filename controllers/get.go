@@ -1,73 +1,53 @@
-package handlers
+package controllers
 
 import (
 	"errors"
 	"net/http"
-	"polarite/packages/paste"
 	h "polarite/platform/highlight"
 	"polarite/repository"
 	"polarite/resources"
 	"strings"
 
-	"github.com/allegro/bigcache/v3"
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 )
+
+// For parsing query string on GET /:id
+// Read documentation on how to parse it here
+// https://docs.gofiber.io/api/ctx#queryparser
+type QueryString struct {
+	// For language syntax highlighting
+	Language string `query:"lang"`
+
+	// For syntax colorscheme
+	Theme string `query:"theme"`
+
+	// Whether or not to enable line number
+	LineNr string `query:"linenr"`
+}
 
 // Get route to find a paste by given ID (on path parameters).
 func (d *Dependency) Get(c *fiber.Ctx) error {
 	// Parse the URL param first
 	id := c.Params("id")
 	if id == "" {
-		return c.Status(http.StatusBadRequest).Send([]byte(repository.ErrNoID.Error()))
+		return c.Status(http.StatusBadRequest).Send([]byte("ID must not be empty"))
 	}
 
-	var qs paste.QueryString
+	var qs QueryString
 	err := c.QueryParser(&qs)
 	if err != nil {
-		return err
+		return c.Status(http.StatusBadRequest).Send([]byte("Invalid query string input"))
 	}
 
 	// Validate if the ID exists or not
-	ids, err := d.PasteController.ReadIDFromMemory()
-	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
+	i, err := d.Paste.GetItemById(c.Context(), id)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
 		return err
 	}
 
-	if errors.Is(err, bigcache.ErrEntryNotFound) {
-		pastes, err := d.PasteController.ReadIDFromDB(c.Context())
-		if err != nil {
-			return err
-		}
+	if errors.Is(err, repository.ErrNotFound) {
+		return c.Status(http.StatusNotFound).Send([]byte("ID specified was not found"))
 
-		ids, err = d.PasteController.UpdateIDListFromDB(pastes)
-		if err != nil {
-			return err
-		}
-	}
-
-	idExists := resources.ValidateID(ids, id)
-	if !idExists {
-		return c.Status(http.StatusNotFound).Send([]byte(repository.ID_NOT_FOUND))
-	}
-
-	// Try to fetch from Redis first
-	i, err := d.PasteController.ReadItemFromCache(c.Context(), id)
-	if err != nil && !errors.Is(err, redis.Nil) {
-		return err
-	}
-
-	// Item not found on Redis, now try to fetch from DB
-	if errors.Is(err, redis.Nil) {
-		i, err = d.PasteController.ReadItemFromDB(c.Context(), id)
-		if err != nil {
-			return err
-		}
-
-		err = d.PasteController.InsertPasteToCache(c.Context(), i)
-		if err != nil {
-			return err
-		}
 	}
 
 	// we need to replace escaped newline to literal newline
