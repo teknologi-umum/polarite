@@ -16,7 +16,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates o
 
 COPY --from=builder /usr/app/polarite .
 
-COPY --from=builder /usr/app/views .
+COPY --from=builder /usr/app/views ./views
 
 RUN mkdir -p /app/data/
 
