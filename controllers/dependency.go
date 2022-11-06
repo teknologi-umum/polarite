@@ -1,9 +1,9 @@
-package handlers
+package controllers
 
-import "polarite/packages/paste"
+import "polarite/repository"
 
 // Dependency injection struct.
 // Initialize once, use it everywhere.
 type Dependency struct {
-	paste.PasteController
+	repository.Paste
 }
