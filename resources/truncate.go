@@ -1,6 +1,6 @@
 package resources
 
-// Safely truncate a string with a given length.
+// TruncateString will safely truncate a string with a given length.
 // Yes, the c++ was an intended joke.
 func TruncateString(s string, len int) string {
 	if len <= 0 {

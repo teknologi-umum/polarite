@@ -2,8 +2,9 @@ package repository_test
 
 import (
 	"os"
-	"polarite/repository"
 	"testing"
+
+	"polarite/repository"
 )
 
 func TestBaseURL(t *testing.T) {
@@ -12,7 +13,7 @@ func TestBaseURL(t *testing.T) {
 		t.Error("an error was thrown:", err)
 	}
 
-	g := repository.BASE_URL()
+	g := repository.BaseUrl()
 	if g != "https://polarite.teknologiumum.com/" {
 		t.Error("should be \"https://polarite.teknologiumum.com/\", got:", g)
 	}
@@ -26,7 +27,7 @@ func TestBaseURL(t *testing.T) {
 		t.Error("an error was thrown:", err)
 	}
 
-	b := repository.BASE_URL()
+	b := repository.BaseUrl()
 	if b != "http://localhost:3000/" {
 		t.Error("should be \"http://localhost:3000/\", got:", g)
 	}

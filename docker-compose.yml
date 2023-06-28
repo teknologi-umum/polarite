@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: ghcr.io/teknologi-umum/polarite:edge
     environment:
       ENVIRONMENT: production
       PORT: 3000
@@ -31,6 +31,7 @@ services:
       - "traefik.http.middlewares.polarite-header.headers.customResponseHeaders.server=Teknologi Umum"
       - "traefik.http.middlewares.polarite-redirectscheme.redirectscheme.scheme=https"
       - "traefik.http.middlewares.polarite-redirectscheme.redirectscheme.permanent=true"
+      - "com.centurylinklabs.watchtower.enable=true"
     platform: linux/amd64
     healthcheck:
       test: curl -f http://localhost:3000/ || exit 1

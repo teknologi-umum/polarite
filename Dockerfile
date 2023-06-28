@@ -1,4 +1,4 @@
-FROM golang:1.19.3-bullseye AS builder
+FROM golang:1.20-bookworm AS builder
 
 ENV ENVIRONMENT=production
 
@@ -8,13 +8,13 @@ COPY . .
 
 RUN go build .
 
-FROM debian:bullseye AS runtime
+FROM debian:bookworm AS runtime
 
 WORKDIR /app
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates openssl curl
 
-COPY --from=builder /usr/app/polarite .
+COPY --from=builder /usr/app/* .
 
 COPY --from=builder /usr/app/views ./views
 

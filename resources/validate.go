@@ -1,6 +1,6 @@
 package resources
 
-// Validate whether or not the given body content is larger than 5 MB or not.
+// ValidateSize validates whether the given body content is larger than 5 MB or not.
 // If it's bigger than 5 MB it returns true.
 // If it's not it returns false.
 func ValidateSize(body []byte) bool {

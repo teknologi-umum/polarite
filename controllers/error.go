@@ -4,10 +4,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"polarite/platform/logtail"
 	"time"
 
-	"github.com/getsentry/sentry-go"
+	"github.com/gofiber/contrib/fibersentry"
+	"polarite/platform/logtail"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,7 +16,7 @@ import (
 // Then we log the error to Logtail and Sentry.
 // Send the error to stdout if "ENVIRONMENT" env variable is not set to "production".
 
-func ErrorHandler(logger *sentry.Client) func(c *fiber.Ctx, e error) error {
+func ErrorHandler() func(c *fiber.Ctx, e error) error {
 	return func(c *fiber.Ctx, e error) error {
 		if e.Error() == "Method Not Allowed" {
 			return c.Status(http.StatusMethodNotAllowed).Send([]byte(e.Error()))
@@ -32,13 +33,9 @@ func ErrorHandler(logger *sentry.Client) func(c *fiber.Ctx, e error) error {
 			return err
 		}
 
-		scope := sentry.NewScope()
-		scope.SetContext("app:meta", map[string]interface{}{
-			"original url": c.OriginalURL(),
-			"method":       c.Method(),
-			"body":         string(c.Body()),
-		})
-		_ = logger.CaptureException(e, &sentry.EventHint{OriginalException: e}, scope)
+		sentryHub := fibersentry.GetHubFromContext(c)
+
+		sentryHub.CaptureException(e)
 
 		if os.Getenv("ENVIRONMENT") != "production" {
 			log.Println(e)
@@ -46,6 +43,6 @@ func ErrorHandler(logger *sentry.Client) func(c *fiber.Ctx, e error) error {
 
 		return c.
 			Status(http.StatusInternalServerError).
-			Send([]byte("An error occured on the server"))
+			Send([]byte("An error occurred on the server"))
 	}
 }
