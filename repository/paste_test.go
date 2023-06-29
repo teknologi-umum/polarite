@@ -3,8 +3,9 @@ package repository_test
 import (
 	"log"
 	"os"
-	"polarite/repository"
 	"testing"
+
+	"polarite/repository"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/getsentry/sentry-go"
@@ -29,14 +30,13 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
-	logger, err := sentry.NewClient(sentry.ClientOptions{})
+	err = sentry.Init(sentry.ClientOptions{})
 	if err != nil {
 		log.Fatalf("Initializing sentry client: %s", err.Error())
 	}
 
 	dependency = &repository.Dependency{
-		Logger: logger,
-		DB:     database,
+		DB: database,
 	}
 
 	exitCode := m.Run()
