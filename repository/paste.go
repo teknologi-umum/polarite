@@ -5,12 +5,10 @@ import (
 	"errors"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/getsentry/sentry-go"
 )
 
 type Dependency struct {
-	DB     *badger.DB
-	Logger *sentry.Client
+	DB *badger.DB
 }
 
 type Paste interface {

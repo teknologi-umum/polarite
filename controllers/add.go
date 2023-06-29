@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+
 	"polarite/repository"
 	"polarite/resources"
 
@@ -28,7 +29,7 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 
 	if exists {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
-		return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + existingId))
+		return c.Status(http.StatusCreated).Send([]byte(repository.BaseUrl() + existingId))
 	}
 
 	id, err := nanoid.GenerateString(nanoid.DefaultAlphabet, 6)
@@ -48,5 +49,5 @@ func (d *Dependency) AddPaste(c *fiber.Ctx) error {
 	}
 
 	c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)
-	return c.Status(http.StatusCreated).Send([]byte(repository.BASE_URL() + data.ID))
+	return c.Status(http.StatusCreated).Send([]byte(repository.BaseUrl() + data.ID))
 }

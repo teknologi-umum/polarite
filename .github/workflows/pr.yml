@@ -7,8 +7,8 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    container: golang:1.19
+    timeout-minutes: 15
+    container: golang:1.20-bookworm
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,7 +24,7 @@ jobs:
           extra_args: --debug --only-verified
 
       - name: Build
-        run: go build .
+        run: go build -buildvcs=false .
 
       - name: Run test & coverage
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...

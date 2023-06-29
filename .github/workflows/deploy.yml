@@ -14,7 +14,7 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    container: golang:1.19-bullseye
+    container: golang:1.20-bookworm
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
           extra_args: --debug --only-verified
 
       - name: Build
-        run: go build .
+        run: go build -buildvcs=false .
 
       - name: Run test & coverage
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
@@ -48,68 +48,11 @@ jobs:
         uses: github/codeql-action/analyze@v1
 
       - uses: codecov/codecov-action@v3
-  cd:
-    name: CD
-    needs: ci
-    runs-on: ubuntu-latest
-    container: debian:bullseye
-    timeout-minutes: 120
-    steps:
-      - name: Install required packages
-        run: apt-get update && apt-get upgrade -y && apt-get install -y tar gzip curl ssh
-
-      - name: Register SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          name: id_ed25519
-          known_hosts: ${{ secrets.SSH_IP }}
-          if_key_exists: replace
-
-      - name: SSH Keyscan
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_IP }} >> /root/.ssh/known_hosts
-
-      - name: Pull latest code
-        run: >
-          ssh
-          -i /root/.ssh/id_ed25519 
-          -p ${{ secrets.SSH_PORT }}
-          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }} 
-          'ssh polarite "cd ${{ secrets.SSH_WORKDIR }}/polarite && git pull" '
-
-      - name: Build Docker images
-        run: >
-          ssh 
-          -i /root/.ssh/id_ed25519
-          -p ${{ secrets.SSH_PORT }}
-          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}
-          "ssh polarite 'echo ${{ secrets.SSH_PASSWORD }} | sudo -S bash -c '\"'cd ${{ secrets.SSH_WORKDIR }}/polarite &&
-          docker compose up -d --build'\"' ' "
-
-      - name: Clean up docker artifacts
-        run: >
-          ssh 
-          -i /root/.ssh/id_ed25519
-          -p ${{ secrets.SSH_PORT }}
-          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}
-          "ssh polarite 'echo ${{ secrets.SSH_PASSWORD }} | sudo -S bash -c '\"'docker container prune -f &&
-          docker image prune -f &&
-          docker builder prune -f '\"' ' "
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v1
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: production
-          set_commits: skip
-          version: ${{ github.sha }}
 
   release:
     name: Release
-    needs: cd
+    needs:
+      - ci
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -148,3 +91,49 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  cd:
+    name: CD
+    needs:
+      - release
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    timeout-minutes: 120
+    steps:
+      - name: Install required packages
+        run: apt-get update && apt-get upgrade -y && apt-get install -y git tar gzip curl ssh
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Register SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_ed25519
+          known_hosts: ${{ secrets.SSH_IP }}
+          if_key_exists: replace
+
+      - name: SSH Keyscan
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_IP }} >> /root/.ssh/known_hosts
+
+      - name: Pull latest code
+        run: >
+          ssh
+          -i /root/.ssh/id_ed25519
+          -p ${{ secrets.SSH_PORT }}
+          -t ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}
+          'ssh polarite "cd ${{ secrets.SSH_WORKDIR }}/polarite && git pull" '
+
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: production
+          set_commits: skip
+          version: ${{ github.sha }}

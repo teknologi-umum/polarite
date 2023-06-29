@@ -4,19 +4,20 @@ import (
 	"html/template"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
-
-	"net/http"
-	"polarite/controllers"
-	"polarite/repository"
 	"strings"
 	"time"
+
+	"polarite/controllers"
+	"polarite/repository"
 
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/dgraph-io/badger/v3"
 	sentry "github.com/getsentry/sentry-go"
+	"github.com/gofiber/contrib/fibersentry"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -62,7 +63,7 @@ func main() {
 	}()
 
 	// Setup Sentry
-	logger, err := sentry.NewClient(sentry.ClientOptions{
+	err = sentry.Init(sentry.ClientOptions{
 		Dsn:              sentryDSN,
 		Debug:            environment != "production",
 		AttachStacktrace: true,
@@ -71,7 +72,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Setting up Sentry client: %s", err.Error())
 	}
-	defer logger.Flush(time.Minute)
+	defer sentry.Flush(time.Minute)
 
 	viewEngine := html.New("./views", ".html")
 	viewEngine.AddFunc(
@@ -85,7 +86,7 @@ func main() {
 		AppName:                 "Teknologi Umum - Polarite",
 		CaseSensitive:           true,
 		StrictRouting:           false,
-		ErrorHandler:            controllers.ErrorHandler(logger),
+		ErrorHandler:            controllers.ErrorHandler(),
 		EnableTrustedProxyCheck: true,
 		BodyLimit:               1024 * 1024 * 6,
 		WriteTimeout:            30 * time.Second,
@@ -95,8 +96,7 @@ func main() {
 
 	// Setup Dependency injection struct
 	repositoryDependency := &repository.Dependency{
-		DB:     database,
-		Logger: logger,
+		DB: database,
 	}
 
 	r := controllers.Dependency{
@@ -109,6 +109,10 @@ func main() {
 		AllowHeaders: fiber.HeaderAuthorization,
 	})
 
+	app.Use(fibersentry.New(fibersentry.Config{
+		Repanic:         true,
+		WaitForDelivery: true,
+	}))
 	app.Use("/assets", filesystem.New(filesystem.Config{
 		Root:         http.Dir("./views/assets"),
 		Browse:       false,
@@ -125,16 +129,16 @@ func main() {
 	signal.Notify(exitSignal, os.Interrupt)
 
 	go func() {
-		err := app.Listen(net.JoinHostPort(httpHostname, httpPort))
+		<-exitSignal
+
+		err := app.Shutdown()
 		if err != nil {
-			log.Printf("Server listening: %s", err.Error())
+			log.Printf("Shutting down: %s", err.Error())
 		}
 	}()
 
-	<-exitSignal
-
-	err = app.Shutdown()
+	err = app.Listen(net.JoinHostPort(httpHostname, httpPort))
 	if err != nil {
-		log.Printf("Shutting down: %s", err.Error())
+		log.Printf("Server listening: %s", err.Error())
 	}
 }
