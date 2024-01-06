@@ -6,12 +6,16 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+
 	"polarite/resources"
 
 	"github.com/dgraph-io/badger/v3"
 )
 
 func (d *Dependency) InsertPaste(ctx context.Context, paste Item) (Item, error) {
+	ctx, span := tracer.Start(ctx, "InsertPaste")
+	defer span.End()
+
 	compressedPaste, err := resources.CompressContent(paste.Paste)
 	if err != nil {
 		return Item{}, err
