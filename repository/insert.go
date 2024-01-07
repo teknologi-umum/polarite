@@ -13,7 +13,7 @@ import (
 )
 
 func (d *Dependency) InsertPaste(ctx context.Context, paste Item) (Item, error) {
-	ctx, span := tracer.Start(ctx, "InsertPaste")
+	_, span := tracer.Start(ctx, "InsertPaste")
 	defer span.End()
 
 	compressedPaste, err := resources.CompressContent(paste.Paste)

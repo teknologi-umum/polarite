@@ -13,7 +13,7 @@ import (
 )
 
 func (d *Dependency) GetItemById(ctx context.Context, id string) (Item, error) {
-	ctx, span := tracer.Start(ctx, "GetItemById")
+	_, span := tracer.Start(ctx, "GetItemById")
 	defer span.End()
 
 	var item = Item{ID: id}
@@ -85,7 +85,7 @@ func (d *Dependency) GetItemById(ctx context.Context, id string) (Item, error) {
 }
 
 func (d *Dependency) ReadHash(ctx context.Context, h string) (exists bool, id string, err error) {
-	ctx, span := tracer.Start(ctx, "ReadHash")
+	_, span := tracer.Start(ctx, "ReadHash")
 	defer span.End()
 
 	err = d.DB.View(func(txn *badger.Txn) error {
