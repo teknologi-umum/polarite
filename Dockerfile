@@ -1,4 +1,4 @@
-FROM golang:1.20-bookworm AS builder
+FROM golang:1.21-bookworm AS builder
 
 ENV ENVIRONMENT=production
 
@@ -8,11 +8,11 @@ COPY . .
 
 RUN go build .
 
-FROM debian:bookworm AS runtime
+FROM debian:bookworm-slim AS runtime
 
 WORKDIR /app
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates openssl curl
+RUN apt-get update && apt-get install -y ca-certificates openssl curl
 
 COPY --from=builder /usr/app/* .
 

@@ -3,10 +3,11 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strings"
+
 	h "polarite/platform/highlight"
 	"polarite/repository"
 	"polarite/resources"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -27,6 +28,9 @@ type QueryString struct {
 
 // Get route to find a paste by given ID (on path parameters).
 func (d *Dependency) Get(c *fiber.Ctx) error {
+	ctx, span := tracer.Start(c.Context(), "Get")
+	defer span.End()
+
 	// Parse the URL param first
 	id := c.Params("id")
 	if id == "" {
@@ -40,7 +44,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	}
 
 	// Validate if the ID exists or not
-	i, err := d.Paste.GetItemById(c.Context(), id)
+	i, err := d.Paste.GetItemById(ctx, id)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
 		return err
 	}

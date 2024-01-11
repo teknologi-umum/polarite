@@ -13,16 +13,21 @@ import (
 	"polarite/controllers"
 	"polarite/repository"
 
+	"github.com/gofiber/contrib/fibersentry"
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/dgraph-io/badger/v3"
-	sentry "github.com/getsentry/sentry-go"
-	"github.com/gofiber/contrib/fibersentry"
+	"go.opentelemetry.io/otel"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/getsentry/sentry-go/otel"
+	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/template/html"
+	"github.com/gofiber/template/html/v2"
 )
 
 func main() {
@@ -64,15 +69,33 @@ func main() {
 
 	// Setup Sentry
 	err = sentry.Init(sentry.ClientOptions{
-		Dsn:              sentryDSN,
-		Debug:            environment != "production",
-		AttachStacktrace: true,
-		Environment:      environment,
+		Dsn:                sentryDSN,
+		Debug:              environment != "production",
+		SampleRate:         1.0,
+		EnableTracing:      true,
+		TracesSampleRate:   0.2,
+		ProfilesSampleRate: 0.01,
+		Environment:        environment,
 	})
 	if err != nil {
 		log.Fatalf("Setting up Sentry client: %s", err.Error())
 	}
 	defer sentry.Flush(time.Minute)
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSpanProcessor(sentryotel.NewSentrySpanProcessor()),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(sentryotel.NewSentryPropagator())
+
+	// Setup Dependency injection struct
+	repositoryDependency := &repository.Dependency{
+		DB: database,
+	}
+
+	r := controllers.Dependency{
+		Paste: repositoryDependency,
+	}
 
 	viewEngine := html.New("./views", ".html")
 	viewEngine.AddFunc(
@@ -94,14 +117,12 @@ func main() {
 		Views:                   viewEngine,
 	})
 
-	// Setup Dependency injection struct
-	repositoryDependency := &repository.Dependency{
-		DB: database,
-	}
+	app.Use(fibersentry.New(fibersentry.Config{
+		Repanic:         true,
+		WaitForDelivery: true,
+	}))
 
-	r := controllers.Dependency{
-		Paste: repositoryDependency,
-	}
+	app.Use(otelfiber.Middleware())
 
 	corsMiddleware := cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -113,6 +134,7 @@ func main() {
 		Repanic:         true,
 		WaitForDelivery: true,
 	}))
+
 	app.Use("/assets", filesystem.New(filesystem.Config{
 		Root:         http.Dir("./views/assets"),
 		Browse:       false,

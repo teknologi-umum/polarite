@@ -4,24 +4,32 @@ on:
   pull_request:
 
 jobs:
-  ci:
-    name: CI
+  scan:
+    name: Secret scan
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    container: golang:1.20-bookworm
+    timeout-minutes: 10
     steps:
+      - name: Setup jq
+        uses: dcarbone/install-jq-action@v2.1.0
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@main
         with:
-          path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
           extra_args: --debug --only-verified
+
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container: golang:1.21
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Build
         run: go build -buildvcs=false .

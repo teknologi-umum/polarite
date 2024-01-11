@@ -6,12 +6,16 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+
 	"polarite/resources"
 
 	"github.com/dgraph-io/badger/v3"
 )
 
 func (d *Dependency) GetItemById(ctx context.Context, id string) (Item, error) {
+	_, span := tracer.Start(ctx, "GetItemById")
+	defer span.End()
+
 	var item = Item{ID: id}
 
 	err := d.DB.View(func(txn *badger.Txn) error {
@@ -81,6 +85,9 @@ func (d *Dependency) GetItemById(ctx context.Context, id string) (Item, error) {
 }
 
 func (d *Dependency) ReadHash(ctx context.Context, h string) (exists bool, id string, err error) {
+	_, span := tracer.Start(ctx, "ReadHash")
+	defer span.End()
+
 	err = d.DB.View(func(txn *badger.Txn) error {
 		defer txn.Discard()
 

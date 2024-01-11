@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/dgraph-io/badger/v3"
+	"go.opentelemetry.io/otel"
 )
 
 type Dependency struct {
@@ -16,6 +17,8 @@ type Paste interface {
 	ReadHash(ctx context.Context, h string) (exists bool, id string, err error)
 	InsertPaste(ctx context.Context, paste Item) (Item, error)
 }
+
+var tracer = otel.Tracer("paste-repository")
 
 var ErrIDDuplicate = errors.New("generated id is duplicated, please try again")
 var ErrNotFound = errors.New("not found")
