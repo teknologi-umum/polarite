@@ -6,8 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/gofiber/contrib/fibersentry"
 	"polarite/platform/logtail"
+
+	"github.com/gofiber/contrib/fibersentry"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -10,24 +10,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgraph-io/badger/v3"
+	"github.com/getsentry/sentry-go"
+	sentryotel "github.com/getsentry/sentry-go/otel"
+	"github.com/gofiber/contrib/fibersentry"
+	"github.com/gofiber/contrib/otelfiber/v2"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html/v2"
+	"go.opentelemetry.io/otel"
+
 	"polarite/controllers"
 	"polarite/repository"
 
-	"github.com/gofiber/contrib/fibersentry"
-	"github.com/gofiber/fiber/v2"
-
-	"github.com/dgraph-io/badger/v3"
-	"go.opentelemetry.io/otel"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
-	"github.com/getsentry/sentry-go"
-	"github.com/getsentry/sentry-go/otel"
-	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/template/html/v2"
 )
 
 func main() {
@@ -69,11 +69,16 @@ func main() {
 
 	// Setup Sentry
 	err = sentry.Init(sentry.ClientOptions{
-		Dsn:                sentryDSN,
-		Debug:              environment != "production",
-		SampleRate:         1.0,
-		EnableTracing:      true,
-		TracesSampleRate:   0.2,
+		Dsn:           sentryDSN,
+		Debug:         environment != "production",
+		SampleRate:    1.0,
+		EnableTracing: true,
+		TracesSampler: func(ctx sentry.SamplingContext) float64 {
+			if ctx.Span.Name == "GET /" || ctx.Span.Name == "GET /robots.txt" || ctx.Span.Name == "GET /favicon.ico" {
+				return 0
+			}
+			return 0.2
+		},
 		ProfilesSampleRate: 0.01,
 		Environment:        environment,
 	})

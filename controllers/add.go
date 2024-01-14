@@ -14,7 +14,7 @@ import (
 // If the submitted paste is a duplicate, it will quickly return
 // a generated ID based on the SHA224 hash.
 func (d *Dependency) AddPaste(c *fiber.Ctx) error {
-	ctx, span := tracer.Start(c.Context(), "Get")
+	ctx, span := tracer.Start(c.Context(), "AddPaste")
 	defer span.End()
 
 	body := c.Body()
