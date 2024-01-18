@@ -72,7 +72,7 @@ func main() {
 		Dsn:           sentryDSN,
 		Debug:         environment != "production",
 		SampleRate:    1.0,
-		EnableTracing: true,
+		EnableTracing: false,
 		TracesSampler: func(ctx sentry.SamplingContext) float64 {
 			if ctx.Span.Name == "GET /" || ctx.Span.Name == "GET /robots.txt" || ctx.Span.Name == "GET /favicon.ico" {
 				return 0
