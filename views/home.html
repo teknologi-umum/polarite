@@ -57,7 +57,7 @@
       content="Paste your text of anything!"
     />
     <meta name="twitter:image" content="https://polarite.teknologiumum.com/assets/social.jpg" />
-
+    <script async src="https://analytics.teknologiumum.com/script.js" data-website-id="e11aa95f-e51f-47a0-b478-c5a7f7d83831"></script>
     <meta name="HandheldFriendly" content="True" />
     <meta name="MSThemeCompatible" content="no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -81,7 +81,7 @@
   </head>
   <body>
     <textarea id="textarea" placeholder="Start typing..."></textarea>
-    <button id="submit-btn" onclick="submit()" role="submit" tabindex="-1">SAVE</button>
+    <button id="submit-btn" data-umami-event="Submit Paste" onclick="submit()" role="submit" tabindex="-1">SAVE</button>
 
     <script>
       const button = document.getElementById("submit-btn");
