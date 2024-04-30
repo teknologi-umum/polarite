@@ -10,7 +10,7 @@ require (
 	github.com/getsentry/sentry-go/otel v0.25.0
 	github.com/gofiber/contrib/fibersentry v1.0.4
 	github.com/gofiber/contrib/otelfiber/v2 v2.0.0-20240105215919-dd5694ca088a
-	github.com/gofiber/fiber/v2 v2.52.0
+	github.com/gofiber/fiber/v2 v2.52.1
 	github.com/gofiber/template/html/v2 v2.0.5
 	go.opentelemetry.io/otel v1.21.0
 	go.opentelemetry.io/otel/sdk v1.21.0
@@ -36,9 +36,9 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
 
 require (
@@ -55,5 +55,5 @@ require (
 	go.opentelemetry.io/contrib v1.20.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 )
