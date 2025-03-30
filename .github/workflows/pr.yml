@@ -23,10 +23,18 @@ jobs:
           extra_args: --debug --only-verified
 
   ci:
-    name: CI
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: CI / ${{ matrix.arch.arch }}
+    runs-on: ${{ matrix.arch.runs-on }}
+    timeout-minutes: 20
     container: golang:1.24
+    strategy:
+      fail-fast: true
+      matrix:
+        arch:
+          - runs-on: ubuntu-24.04
+            arch: amd64
+          - runs-on: ubuntu-24.04-arm
+            arch: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
