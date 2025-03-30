@@ -1,8 +1,9 @@
 package main
 
 import (
+	"context"
 	"html/template"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -10,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/getsentry/sentry-go"
 	sentryotel "github.com/getsentry/sentry-go/otel"
 	"github.com/gofiber/contrib/fibersentry"
@@ -20,6 +21,7 @@ import (
 	"go.opentelemetry.io/otel"
 
 	"polarite/controllers"
+	slogotel "polarite/platform/slog-otel"
 	"polarite/repository"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -56,14 +58,19 @@ func main() {
 		httpPort = "3000"
 	}
 
+	slog.SetDefault(slog.New(slogotel.OtelHandler{
+		Next: slog.NewJSONHandler(os.Stdout, nil),
+	}))
+
 	database, err := badger.Open(badger.DefaultOptions(databaseDirectory))
 	if err != nil {
-		log.Fatalf("Opening database: %s", err.Error())
+		slog.ErrorContext(context.Background(), "error during opening badger database", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	defer func() {
 		err := database.Close()
 		if err != nil {
-			log.Printf("Closing database: %s", err.Error())
+			slog.WarnContext(context.Background(), "error during closing badger database", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -79,11 +86,11 @@ func main() {
 			}
 			return 0.2
 		},
-		ProfilesSampleRate: 0.01,
-		Environment:        environment,
+		Environment: environment,
 	})
 	if err != nil {
-		log.Fatalf("Setting up Sentry client: %s", err.Error())
+		slog.ErrorContext(context.Background(), "error during setting up sentry client", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	defer sentry.Flush(time.Minute)
 
@@ -160,12 +167,12 @@ func main() {
 
 		err := app.Shutdown()
 		if err != nil {
-			log.Printf("Shutting down: %s", err.Error())
+			slog.WarnContext(context.Background(), "error during shutting down server", slog.String("error", err.Error()))
 		}
 	}()
 
 	err = app.Listen(net.JoinHostPort(httpHostname, httpPort))
 	if err != nil {
-		log.Printf("Server listening: %s", err.Error())
+		slog.ErrorContext(context.Background(), "error listening to port", slog.String("error", err.Error()))
 	}
 }

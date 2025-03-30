@@ -2,15 +2,20 @@ package highlight
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters/html"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("platform-highlight")
 
 type Highlighter interface {
 	Highlight(source, lang, theme, linenr string) (string, error)
+	HighlightWithContext(ctx context.Context, source, lang, theme, linenr string) (string, error)
 }
 
 // Highlight the source using chroma in HTML format.
@@ -48,4 +53,11 @@ func Highlight(source, lang, theme, linenr string) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+func HighlightWithContext(ctx context.Context, source, lang, theme, linenr string) (string, error) {
+	_, span := tracer.Start(ctx, "HighlightWithContext")
+	defer span.End()
+
+	return Highlight(source, lang, theme, linenr)
 }

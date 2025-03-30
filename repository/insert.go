@@ -9,7 +9,7 @@ import (
 
 	"polarite/resources"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 )
 
 func (d *Dependency) InsertPaste(ctx context.Context, paste Item) (Item, error) {
