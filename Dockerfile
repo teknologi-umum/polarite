@@ -1,4 +1,4 @@
-FROM golang:1.21-bookworm AS builder
+FROM golang:1.24-bookworm AS builder
 
 ENV ENVIRONMENT=production
 
@@ -14,9 +14,9 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y ca-certificates openssl curl
 
-COPY --from=builder /usr/app/* .
+COPY . .
 
-COPY --from=builder /usr/app/views ./views
+COPY --from=builder /usr/app/polarite /usr/local/bin/polarite
 
 RUN mkdir -p /app/data/
 
@@ -28,4 +28,4 @@ ENV ENVIRONMENT=production
 
 EXPOSE ${HTTP_PORT}
 
-CMD [ "./polarite" ]
+CMD [ "/usr/local/bin/polarite" ]

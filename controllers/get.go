@@ -58,7 +58,7 @@ func (d *Dependency) Get(c *fiber.Ctx) error {
 	content := strings.Replace(string(i.Paste), `\n`, "\n", -1)
 
 	if qs.Language != "" {
-		highlighted, err := h.Highlight(content, qs.Language, qs.Theme, qs.LineNr)
+		highlighted, err := h.HighlightWithContext(ctx, content, qs.Language, qs.Theme, qs.LineNr)
 		if err != nil {
 			// they should still be able to get the plain text even if the highlighter is b0rked
 			c.Set(fiber.HeaderContentType, fiber.MIMETextPlainCharsetUTF8)

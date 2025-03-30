@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"polarite/platform/logtail"
@@ -37,11 +35,6 @@ func ErrorHandler() func(c *fiber.Ctx, e error) error {
 		sentryHub := fibersentry.GetHubFromContext(c)
 
 		sentryHub.CaptureException(e)
-
-		if os.Getenv("ENVIRONMENT") != "production" {
-			log.Println(e)
-		}
-
 		return c.
 			Status(http.StatusInternalServerError).
 			Send([]byte("An error occurred on the server"))

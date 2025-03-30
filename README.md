@@ -10,9 +10,6 @@
 
 ## Usage
 
-### Web Interface
-Visit https://polarite.teknologiumum.com
-
 ### API
 
 Send a `POST` request to `https://polarite.teknologiumum.com` with:
@@ -162,6 +159,41 @@ If none of these options are passed, you will get a plain text without any highl
 You can, of course, combine the options.
 For example: `https://polarite.teknologiumum.com/your-unique-id?lang=rust&theme=nord&linenr=true`
 
+## Self-hosting Installation
+
+We only provide Docker as a self-hosting option. You can build the image from source if you want it.
+
+### Docker
+
+```bash
+docker run -d -p 3000:3000 ghcr.io/teknologi-umum/polarite:latest
+```
+
+If you want to use the image from `master` branch, you can use `:edge` tag instead of `:latest`.
+
+### Docker Compose
+
+```yaml
+services:
+  polarite:
+    image: ghcr.io/teknologi-umum/polarite:latest
+    ports:
+      - 3000:3000
+    environment:
+      ENVIRONMENT: production
+      PORT: 3000
+      TZ: UTC
+      SENTRY_DSN: ""
+      DATABASE_DIRECTORY: /app/data
+    healthcheck:
+      test: curl -f http://localhost:3000/ || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 5
+```
+
+If you want to use the image from `master` branch, you can use `:edge` tag instead of `:latest`.
+
 ## Why the name, Polarite?
 
 In the dawn of time, it began with the birth of [Graphene](https://github.com/teknologi-umum/graphene) repository, which its' name was picked from the name of a mineral.
@@ -172,19 +204,19 @@ Now, where mankind stands, we want to continue that convention, to pick a name f
 ## License
 
 ```
-   Copyright 2021-present Teknologi Umum <opensource@teknologiumum.com>
+Copyright 2025 Teknologi Umum <opensource@teknologiumum.com>
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
 
 See [LICENSE](./LICENSE)

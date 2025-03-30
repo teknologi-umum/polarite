@@ -9,7 +9,7 @@ import (
 
 	"polarite/resources"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 )
 
 func (d *Dependency) GetItemById(ctx context.Context, id string) (Item, error) {
