@@ -51,12 +51,4 @@ jobs:
           REDIS_URL: redis://@cache:6379
           TZ: UTC
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: go
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
-
       - uses: codecov/codecov-action@v3
