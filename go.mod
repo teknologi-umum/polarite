@@ -10,7 +10,7 @@ require (
 	github.com/getsentry/sentry-go/otel v0.31.1
 	github.com/gofiber/contrib/fibersentry v1.0.7
 	github.com/gofiber/contrib/otelfiber/v2 v2.2.0
-	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/gofiber/fiber/v2 v2.52.7
 	github.com/gofiber/template/html/v2 v2.1.3
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/sdk v1.35.0
